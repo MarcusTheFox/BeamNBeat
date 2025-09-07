@@ -36,7 +36,7 @@ public:
 
 	static TArray<FTimeMapData> GetTimeMapData(UDataTable* BeatMapTable);
 	
-	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffsetMs);
+	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffset);
 
 private:
 	static float GetInitialBPM(const FBeatMapData& FirstBeatData);
