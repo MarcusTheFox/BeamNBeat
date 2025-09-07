@@ -9,9 +9,16 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BeatMapFunctionLibrary.generated.h"
 
-/**
- * 
- */
+USTRUCT()
+struct FBeatConversionState
+{
+	GENERATED_BODY()
+
+	double CurrentTime = 0.0;
+	float PreviousBeat = 0.0f;
+	float CurrentBPM = 120.0f;
+};
+
 UCLASS()
 class RANGEMASTER_API UBeatMapFunctionLibrary : public UBlueprintFunctionLibrary
 {
@@ -30,4 +37,16 @@ public:
 	static TArray<FTimeMapData> GetTimeMapData(UDataTable* BeatMapTable);
 	
 	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffsetMs);
+
+private:
+	static float GetInitialBPM(const FBeatMapData& FirstBeatData);
+	static void ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
+	
+	static float CalculateTotalBeat(const FBeatMapData& BeatData);
+	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
+	
+	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState);
+	static void UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState);
+	
+	static FTimeMapData CreateTimeMapData(const FBeatMapData& BeatData, const double CurrentTime);
 };

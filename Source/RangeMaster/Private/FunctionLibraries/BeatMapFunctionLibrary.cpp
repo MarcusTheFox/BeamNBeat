@@ -3,7 +3,7 @@
 
 #include "FunctionLibraries/BeatMapFunctionLibrary.h"
 
-#include "Algo/Count.h"
+#include "PhysicsEngine/PhysicsSettings.h"
 
 template <typename T>
 TArray<T> UBeatMapFunctionLibrary::GetDataFromDataTable(UDataTable* DataTable)
@@ -48,41 +48,71 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(TArray<F
 	if (BeatMapData.Num() == 0) return BeatTimes;
 
 	BeatTimes.Reserve(BeatMapData.Num());
-	
-	double CurrentTime = TimeOffsetMs / 1000.0;
 
-	float PreviousBeat = 0.0f;
-	float CurrentBPM = 120.0f;
-	
-	if (BeatMapData[0].BPM > 0.0f)
-	{
-		CurrentBPM = BeatMapData[0].BPM;
-	}
+	FBeatConversionState ConversionState;
+	ConversionState.CurrentTime = TimeOffsetMs / 1000.0;
+	ConversionState.PreviousBeat = 0.0f;
+	ConversionState.CurrentBPM = GetInitialBPM(BeatMapData[0]);
 
 	for (const FBeatMapData& Data: BeatMapData)
 	{
-		const float Beat = Data.BeatIndex + Data.BeatFraction;
-		const float DeltaBeat = Beat - PreviousBeat;
-
-		if (CurrentBPM > 0.0f)
-		{
-			const float SecondsPerBeat = 60.0f / CurrentBPM;
-			CurrentTime += DeltaBeat * SecondsPerBeat;
-		}
-		if (Data.BPM > 0.0f)
-		{
-			CurrentBPM = Data.BPM;
-		}
-        
-		FTimeMapData NewTimeData;
-		NewTimeData.SpawnerID = Data.SpawnerID;
-		NewTimeData.ShotPower = Data.ShotPower;
-		NewTimeData.Time = CurrentTime;
-		
-		BeatTimes.Add(NewTimeData);
-
-		PreviousBeat = Beat;
+		ProcessBeatData(Data, ConversionState, BeatTimes);
 	}
 
 	return BeatTimes;
+}
+
+float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapData& FirstBeatData)
+{
+	return FirstBeatData.BPM > 0.0f ? FirstBeatData.BPM : 120.0f;
+}
+
+void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState,
+                                              TArray<FTimeMapData>& OutBeatTimes)
+{
+	const float Beat = CalculateTotalBeat(BeatData);
+	const float DeltaBeat = CalculateDeltaBeat(Beat, ConversionState.PreviousBeat);
+
+	UpdateCurrentTime(DeltaBeat, ConversionState);
+	UpdateBPMIfChanged(BeatData, ConversionState);
+
+	OutBeatTimes.Add(CreateTimeMapData(BeatData, ConversionState.CurrentTime));
+
+	ConversionState.PreviousBeat = Beat;
+}
+
+float UBeatMapFunctionLibrary::CalculateTotalBeat(const FBeatMapData& BeatData)
+{
+	return BeatData.BeatIndex + BeatData.BeatFraction;
+}
+
+float UBeatMapFunctionLibrary::CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat)
+{
+	return CurrentBeat - PreviousBeat;
+}
+
+void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState)
+{
+	if (ConversionState.CurrentBPM > 0.0f)
+	{
+		const float SecondsPerBeat = 60.0f / ConversionState.CurrentBPM;
+		ConversionState.CurrentTime += DeltaBeat * SecondsPerBeat;
+	}
+}
+
+void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState)
+{
+	if (BeatData.BPM > 0.0f)
+	{
+		ConversionState.CurrentBPM = BeatData.BPM;
+	}
+}
+
+FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapData& BeatData, const double CurrentTime)
+{
+	FTimeMapData NewTimeData;
+	NewTimeData.SpawnerID = BeatData.SpawnerID;
+	NewTimeData.ShotPower = BeatData.ShotPower;
+	NewTimeData.Time = CurrentTime;
+	return NewTimeData;
 }
