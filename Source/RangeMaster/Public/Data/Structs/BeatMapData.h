@@ -7,18 +7,18 @@
 #include "BeatMapData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FBeatMapData : public FTableRowBase
+struct FBeatMapData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Beat = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 SpawnerID = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "100"))
-	int32 ShotPower = 1000;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 ShotPower = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float BPM = 0.0f;
