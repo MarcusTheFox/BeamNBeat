@@ -4,7 +4,6 @@
 #include "FunctionLibraries/TrackFunctionLibrary.h"
 
 #include "JsonObjectConverter.h"
-#include "Core/Parsing/BeatMapParser.h"
 #include "Settings/RangeMasterProjectSettings.h"
 #include "Sound/SoundWaveProcedural.h"
 
@@ -38,7 +37,6 @@ TArray<FTrackInfo> UTrackFunctionLibrary::LoadAllTracksMetadata(const FString& D
 		const FString BeatMapPath = FPaths::Combine(TrackFolder, TrackInfo.BeatMapFile);
 				
 		TrackInfo.Duration = GetWavDurationSeconds(AudioPath);
-		TrackInfo.TotalTargets = GetBeatMapTargetCount(BeatMapPath);
 				
 		if (TrackInfo.Duration > 0)
 		{
@@ -57,7 +55,7 @@ TArray<FTrackInfo> UTrackFunctionLibrary::LoadAllTracksMetadata(const FString& D
 }
 
 bool UTrackFunctionLibrary::LoadBeatMapForTrack(const FTrackInfo& Track, const FString& TracksDirectory,
-	TArray<FBeatMapData>& OutBeatMap, FBeatMapSettings& OutSettings)
+	FBeatMap& OutBeatMap)
 {
 	if (Track.BeatMapFile.IsEmpty())
 	{
@@ -68,14 +66,13 @@ bool UTrackFunctionLibrary::LoadBeatMapForTrack(const FTrackInfo& Track, const F
 
 	FString BeatMapPath = FPaths::Combine(TracksDirectory, Track.TrackID.ToString(), Track.BeatMapFile);
 
-	TArray<FString> Lines;
-	if (!FFileHelper::LoadFileToStringArray(Lines, *BeatMapPath))
+	FString JsonString;
+	if (!FFileHelper::LoadFileToString(JsonString, *BeatMapPath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to read beatmap file to string array: %s"), *BeatMapPath);
+		UE_LOG(LogTemp, Error, TEXT("Failed to read beatmap file to string: %s"), *Track.BeatMapFile);
 		return false;
 	}
-
-	return FBeatMapParser::Parse(Lines, OutBeatMap, OutSettings);
+	return FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &OutBeatMap, 0, 0);
 }
 
 USoundWaveProcedural* UTrackFunctionLibrary::CreateProceduralSoundWave(const FString& FilePath)
@@ -147,23 +144,9 @@ float UTrackFunctionLibrary::GetWavDurationSeconds(const FString& FilePath)
 	return CalculateDurationFromWavInfo(WaveInfo);
 }
 
-int32 UTrackFunctionLibrary::GetBeatMapTargetCount(const FString& FilePath)
+bool UTrackFunctionLibrary::GetBeatMapFromTrackInfo(const FTrackInfo& TrackInfo, FBeatMap& OutBeatMap)
 {
-	TArray<FString> Lines;
-	
-	if (!FFileHelper::LoadFileToStringArray(Lines, *FilePath))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Could not read beatmap file for counting targets: %s"), *FilePath);
-		return 0;
-	}
-	
-	return FBeatMapParser::CountTargets(Lines);
-}
-
-bool UTrackFunctionLibrary::GetBeatMapFromTrackInfo(const FTrackInfo& TrackInfo, TArray<FBeatMapData>& OutBeatMap,
-	FBeatMapSettings& OutSettings)
-{
-	if (!LoadBeatMapForTrack(TrackInfo, GetTracksDirectory(), OutBeatMap, OutSettings))
+	if (!LoadBeatMapForTrack(TrackInfo, GetTracksDirectory(), OutBeatMap))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load beatmap for track: %s"), *TrackInfo.TrackID.ToString());
 		return false;

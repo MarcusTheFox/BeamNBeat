@@ -6,7 +6,6 @@
 #include "Data/Structs/BeatMapData.h"
 #include "Actors/SpawnerManager.h"
 #include "Actors/Target.h"
-#include "Core/Parsing/BeatMapParser.h"
 #include "Data/Structs/TimeMapData.h"
 #include "Data/Structs/TrackInfo.h"
 #include "RhythmController.generated.h"

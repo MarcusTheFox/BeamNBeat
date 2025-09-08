@@ -54,17 +54,15 @@ void ARangeMasterGameMode::SetGameTrack(const FTrackInfo& TrackInfo)
 {
     CurrentTrackData = TrackInfo;
     CachedRawAudioData.Empty();
-    
-    TArray<FBeatMapData> BeatMap;
+
+    FBeatMap BeatMap;
     USoundWave* SoundWave;
-    FBeatMapSettings BeatMapSettings;
     
-    if (!UTrackFunctionLibrary::GetBeatMapFromTrackInfo(TrackInfo, BeatMap, BeatMapSettings)) return;
+    if (!UTrackFunctionLibrary::GetBeatMapFromTrackInfo(TrackInfo, BeatMap)) return;
     if (!UTrackFunctionLibrary::GetRawAudioDataFromTrackInfo(TrackInfo, CachedRawAudioData)) return;
     if (!UTrackFunctionLibrary::GetSoundWaveFromRawAudioData(CachedRawAudioData, SoundWave)) return;
 
-    const TArray<FTimeMapData> TimeMap = UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(
-        BeatMap, BeatMapSettings.TimeOffset);
+    const TArray<FTimeMapData> TimeMap = UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(BeatMap);
     
     RhythmController->PrepareTrack(SoundWave, TimeMap);
 }

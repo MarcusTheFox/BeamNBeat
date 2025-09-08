@@ -17,6 +17,7 @@ struct FBeatConversionState
 	double CurrentTime = 0.0;
 	float PreviousBeat = 0.0f;
 	float CurrentBPM = 120.0f;
+	float CurrentPower = 0.0f;
 };
 
 UCLASS()
@@ -25,7 +26,7 @@ class RANGEMASTER_API UBeatMapFunctionLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffset);
+	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(const FBeatMap& BeatMap);
 
 private:
 	static float GetInitialBPM(const FBeatMapData& FirstBeatData);
@@ -36,7 +37,7 @@ private:
 	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState);
 	static void UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState);
 	
-	static FTimeMapData CreateTimeMapData(const FBeatMapData& BeatData, const double CurrentTime);
+	static FTimeMapData CreateTimeMapData(const FBeatMapData& BeatData, const FBeatConversionState& State);
 	
 	static float CalculateShotPower(float ApexHeight);
 	static float CalculateApexHeight(float ShotPower);

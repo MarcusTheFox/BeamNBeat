@@ -24,7 +24,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Track Management")
 	static bool LoadBeatMapForTrack(const FTrackInfo& Track, const FString& TracksDirectory,
-		TArray<FBeatMapData>& OutBeatMap, FBeatMapSettings& OutSettings);
+		FBeatMap& OutBeatMap);
 	
 	UFUNCTION(BlueprintCallable, Category = "Track Management")
 	static USoundWaveProcedural* CreateProceduralSoundWave(const FString& FilePath);
@@ -35,12 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Track Management|Metadata")
 	static float GetWavDurationSeconds(const FString& FilePath);
 	
-	UFUNCTION(BlueprintCallable, Category = "Track Management|Metadata")
-	static int32 GetBeatMapTargetCount(const FString& FilePath);
-	
 	UFUNCTION(BlueprintCallable, Category = "Track Management")
-	static bool GetBeatMapFromTrackInfo(const FTrackInfo& TrackInfo, TArray<FBeatMapData>& OutBeatMap,
-		FBeatMapSettings& OutSettings);
+	static bool GetBeatMapFromTrackInfo(const FTrackInfo& TrackInfo, FBeatMap& OutBeatMap);
 
 	UFUNCTION(BlueprintCallable, Category = "Track Management")
 	static bool GetSoundWaveFromTrackInfo(FTrackInfo TrackInfo, USoundWave*& OutSoundWave);
