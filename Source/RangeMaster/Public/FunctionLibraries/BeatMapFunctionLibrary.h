@@ -17,8 +17,7 @@ struct FBeatConversionState
 
 	double Time;
 	float PreviousBeat;
-	float Bpm;
-	float Power;
+	FBeatMapDefaults Defaults;
 };
 
 UCLASS()
@@ -30,14 +29,14 @@ public:
 	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(const FBeatMap& BeatMap);
 
 private:
-	static void ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
+	static void ProcessBeatData(const FBeatMapNote& Note, FBeatConversionState& State, TArray<FTimeMapData>& OutBeatTimes);
 	
 	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
 	
-	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState);
-	static void UpdateBPMIfChanged(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState);
+	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& State);
+	static void UpdateBPMIfChanged(const FBeatMapNote& Note, FBeatConversionState& State);
 	
-	static FTimeMapData CreateTimeMapData(const FBeatMapNote& BeatData, const FBeatConversionState& State);
+	static FTimeMapData CreateTimeMapData(const FBeatMapNote& Note, const FBeatConversionState& State);
 	
 	static float CalculateShotPower(float ApexHeight);
 	static float CalculateApexHeight(float ShotPower);

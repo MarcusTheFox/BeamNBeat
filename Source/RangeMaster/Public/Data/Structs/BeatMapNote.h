@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BeatMapDefaults.h"
 #include "Engine/DataTable.h"
 #include "BeatMapNote.generated.h"
 
@@ -11,15 +12,15 @@ struct FBeatMapNote
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	float Beat = 0.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	int32 Id = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	int32 Power = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Bpm = 0.0f;
+	UPROPERTY()
+	FBeatMapDefaults Defaults;
 };

@@ -15,8 +15,8 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	FBeatConversionState ConversionState;
 	ConversionState.Time = BeatMap.Settings.Offset;
 	ConversionState.PreviousBeat = 0.0f;
-	ConversionState.Bpm = BeatMap.Settings.Bpm;
-	ConversionState.Power = BeatMap.Settings.Power;
+	ConversionState.Defaults.Bpm = BeatMap.Settings.Bpm;
+	ConversionState.Defaults.Power = BeatMap.Settings.Power;
 
 	for (const FBeatMapNote& Data: BeatMap.Notes)
 	{
@@ -26,17 +26,17 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	return BeatTimes;
 }
 
-void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState,
+void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& Note, FBeatConversionState& State,
                                               TArray<FTimeMapData>& OutBeatTimes)
 {
-	const float DeltaBeat = CalculateDeltaBeat(BeatData.Beat, ConversionState.PreviousBeat);
+	const float DeltaBeat = CalculateDeltaBeat(Note.Beat, State.PreviousBeat);
 
-	UpdateCurrentTime(DeltaBeat, ConversionState);
-	UpdateBPMIfChanged(BeatData, ConversionState);
+	UpdateCurrentTime(DeltaBeat, State);
+	UpdateBPMIfChanged(Note, State);
 
-	OutBeatTimes.Add(CreateTimeMapData(BeatData, ConversionState));
+	OutBeatTimes.Add(CreateTimeMapData(Note, State));
 
-	ConversionState.PreviousBeat = BeatData.Beat;
+	State.PreviousBeat = Note.Beat;
 }
 
 float UBeatMapFunctionLibrary::CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat)
@@ -44,28 +44,28 @@ float UBeatMapFunctionLibrary::CalculateDeltaBeat(const float CurrentBeat, const
 	return CurrentBeat - PreviousBeat;
 }
 
-void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState)
+void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& State)
 {
-	if (ConversionState.Bpm > 0.0f)
+	if (State.Defaults.Bpm > 0.0f)
 	{
-		const float SecondsPerBeat = 60.0f / ConversionState.Bpm;
-		ConversionState.Time += DeltaBeat * SecondsPerBeat;
+		const float SecondsPerBeat = 60.0f / State.Defaults.Bpm;
+		State.Time += DeltaBeat * SecondsPerBeat;
 	}
 }
 
-void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState)
+void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapNote& Note, FBeatConversionState& State)
 {
-	if (BeatData.Bpm > 0.0f)
+	if (Note.Defaults.Bpm > 0.0f)
 	{
-		ConversionState.Bpm = BeatData.Bpm;
+		State.Defaults.Bpm = Note.Defaults.Bpm;
 	}
 }
 
-FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& BeatData, const FBeatConversionState& State)
+FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& Note, const FBeatConversionState& State)
 {
 	FTimeMapData NewTimeData;
-	NewTimeData.SpawnerID = BeatData.Id;
-	NewTimeData.ShotPower = BeatData.Power == 0 ? State.Power : BeatData.Power;
+	NewTimeData.SpawnerID = Note.Id;
+	NewTimeData.ShotPower = Note.Power == 0 ? State.Defaults.Power : Note.Power;
 	const float Apex = CalculateApexHeight(NewTimeData.ShotPower);
 	NewTimeData.Time = State.Time - CalculateTimeToApex(Apex);
 	UE_LOG(LogTemp, Display, TEXT("SpawnerID: %d | Time: %f"), NewTimeData.SpawnerID, NewTimeData.Time);

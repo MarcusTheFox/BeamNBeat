@@ -9,9 +9,9 @@ struct FBeatMap
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	FBeatMapSettings Settings;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 	TArray<FBeatMapNote> Notes;
 };
