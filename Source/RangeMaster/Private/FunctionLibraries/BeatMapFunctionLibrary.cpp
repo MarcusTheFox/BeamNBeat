@@ -32,7 +32,7 @@ void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& Note, FBeatCon
 	const float DeltaBeat = CalculateDeltaBeat(Note.Beat, State.PreviousBeat);
 
 	UpdateCurrentTime(DeltaBeat, State);
-	UpdateBPMIfChanged(Note, State);
+	UpdateDefaultsIfChanged(Note, State);
 
 	OutBeatTimes.Add(CreateTimeMapData(Note, State));
 
@@ -53,11 +53,15 @@ void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConv
 	}
 }
 
-void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapNote& Note, FBeatConversionState& State)
+void UBeatMapFunctionLibrary::UpdateDefaultsIfChanged(const FBeatMapNote& Note, FBeatConversionState& State)
 {
 	if (Note.Defaults.Bpm > 0.0f)
 	{
 		State.Defaults.Bpm = Note.Defaults.Bpm;
+	}
+	if (Note.Defaults.Power > 0.0f)
+	{
+		State.Defaults.Power = Note.Defaults.Power;
 	}
 }
 

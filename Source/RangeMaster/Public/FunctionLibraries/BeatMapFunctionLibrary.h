@@ -34,7 +34,7 @@ private:
 	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
 	
 	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& State);
-	static void UpdateBPMIfChanged(const FBeatMapNote& Note, FBeatConversionState& State);
+	static void UpdateDefaultsIfChanged(const FBeatMapNote& Note, FBeatConversionState& State);
 	
 	static FTimeMapData CreateTimeMapData(const FBeatMapNote& Note, const FBeatConversionState& State);
 	
