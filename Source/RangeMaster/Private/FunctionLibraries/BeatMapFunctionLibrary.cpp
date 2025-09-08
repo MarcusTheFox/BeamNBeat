@@ -13,10 +13,10 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	BeatTimes.Reserve(BeatMap.Notes.Num());
 
 	FBeatConversionState ConversionState;
-	ConversionState.CurrentTime = BeatMap.Settings.TimeOffset;
+	ConversionState.Time = BeatMap.Settings.Offset;
 	ConversionState.PreviousBeat = 0.0f;
-	ConversionState.CurrentBPM = BeatMap.Settings.StartBPM;
-	ConversionState.CurrentPower = BeatMap.Settings.DefaultPower;
+	ConversionState.Bpm = BeatMap.Settings.Bpm;
+	ConversionState.Power = BeatMap.Settings.Power;
 
 	for (const FBeatMapNote& Data: BeatMap.Notes)
 	{
@@ -28,7 +28,7 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 
 float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapNote& FirstBeatData)
 {
-	return FirstBeatData.BPM > 0.0f ? FirstBeatData.BPM : 120.0f;
+	return FirstBeatData.Bpm > 0.0f ? FirstBeatData.Bpm : 120.0f;
 }
 
 void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState,
@@ -51,28 +51,28 @@ float UBeatMapFunctionLibrary::CalculateDeltaBeat(const float CurrentBeat, const
 
 void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState)
 {
-	if (ConversionState.CurrentBPM > 0.0f)
+	if (ConversionState.Bpm > 0.0f)
 	{
-		const float SecondsPerBeat = 60.0f / ConversionState.CurrentBPM;
-		ConversionState.CurrentTime += DeltaBeat * SecondsPerBeat;
+		const float SecondsPerBeat = 60.0f / ConversionState.Bpm;
+		ConversionState.Time += DeltaBeat * SecondsPerBeat;
 	}
 }
 
 void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState)
 {
-	if (BeatData.BPM > 0.0f)
+	if (BeatData.Bpm > 0.0f)
 	{
-		ConversionState.CurrentBPM = BeatData.BPM;
+		ConversionState.Bpm = BeatData.Bpm;
 	}
 }
 
 FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& BeatData, const FBeatConversionState& State)
 {
 	FTimeMapData NewTimeData;
-	NewTimeData.SpawnerID = BeatData.SpawnerID;
-	NewTimeData.ShotPower = BeatData.ShotPower == 0 ? State.CurrentPower : BeatData.ShotPower;
+	NewTimeData.SpawnerID = BeatData.Id;
+	NewTimeData.ShotPower = BeatData.Power == 0 ? State.Power : BeatData.Power;
 	const float Apex = CalculateApexHeight(NewTimeData.ShotPower);
-	NewTimeData.Time = State.CurrentTime - CalculateTimeToApex(Apex);
+	NewTimeData.Time = State.Time - CalculateTimeToApex(Apex);
 	UE_LOG(LogTemp, Display, TEXT("SpawnerID: %d | Time: %f"), NewTimeData.SpawnerID, NewTimeData.Time);
 	return NewTimeData;
 }

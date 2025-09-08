@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Structs/BeatMap.h"
 #include "Data/Structs/BeatMapNote.h"
 #include "Data/Structs/TimeMapData.h"
 #include "Data/Structs/TrackDataRow.h"
@@ -14,10 +15,10 @@ struct FBeatConversionState
 {
 	GENERATED_BODY()
 
-	double CurrentTime = 0.0;
-	float PreviousBeat = 0.0f;
-	float CurrentBPM = 120.0f;
-	float CurrentPower = 0.0f;
+	double Time;
+	float PreviousBeat;
+	float Bpm;
+	float Power;
 };
 
 UCLASS()

@@ -9,11 +9,11 @@ struct FTimeMapData
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	float Time = 0.0f;
+	float Time;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	int32 SpawnerID = 0;
+	int32 SpawnerID;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	int32 ShotPower = 1000;
+	int32 ShotPower;
 };

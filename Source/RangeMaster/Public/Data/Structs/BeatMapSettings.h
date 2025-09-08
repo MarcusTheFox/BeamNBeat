@@ -9,11 +9,11 @@ struct FBeatMapSettings
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, Category="BeatMap Settings")
-	float StartBPM = 120.0f;
+	float Bpm = 0.0f;
     
 	UPROPERTY(BlueprintReadWrite, Category="BeatMap Settings")
-	int32 DefaultPower = 1500;
+	int32 Power = 0;
     
 	UPROPERTY(BlueprintReadWrite, Category="BeatMap Settings")
-	float TimeOffset = 0.0f;
+	float Offset = 0.0f;
 };

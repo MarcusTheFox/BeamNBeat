@@ -15,11 +15,11 @@ struct FBeatMapNote
 	float Beat = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 SpawnerID = 0;
+	int32 Id = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 ShotPower = 0;
+	int32 Power = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float BPM = 0.0f;
+	float Bpm = 0.0f;
 };
