@@ -107,6 +107,26 @@ FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapData& Beat
 	FTimeMapData NewTimeData;
 	NewTimeData.SpawnerID = BeatData.SpawnerID;
 	NewTimeData.ShotPower = BeatData.ShotPower;
-	NewTimeData.Time = CurrentTime;
+	const float Apex = CalculateApexHeight(BeatData.ShotPower);
+	NewTimeData.Time = CurrentTime - CalculateTimeToApex(Apex);
+	UE_LOG(LogTemp, Display, TEXT("SpawnerID: %d | Time: %f"), NewTimeData.SpawnerID, NewTimeData.Time);
 	return NewTimeData;
+}
+
+float UBeatMapFunctionLibrary::CalculateShotPower(float ApexHeight)
+{
+	float G = UPhysicsSettings::Get()->DefaultGravityZ;
+	return FMath::Abs(FMath::Sqrt(2 * G * ApexHeight));
+}
+
+float UBeatMapFunctionLibrary::CalculateApexHeight(float ShotPower)
+{
+	float G = UPhysicsSettings::Get()->DefaultGravityZ;
+	return ShotPower * ShotPower / (2 * G);
+}
+
+float UBeatMapFunctionLibrary::CalculateTimeToApex(float ApexHeight)
+{
+	float G = UPhysicsSettings::Get()->DefaultGravityZ;
+	return FMath::Abs(FMath::Sqrt(2 * ApexHeight / G));
 }

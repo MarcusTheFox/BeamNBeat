@@ -42,11 +42,14 @@ private:
 	static float GetInitialBPM(const FBeatMapData& FirstBeatData);
 	static void ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
 	
-	static float CalculateTotalBeat(const FBeatMapData& BeatData);
 	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
 	
 	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState);
 	static void UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState);
 	
 	static FTimeMapData CreateTimeMapData(const FBeatMapData& BeatData, const double CurrentTime);
+	
+	static float CalculateShotPower(float ApexHeight);
+	static float CalculateApexHeight(float ShotPower);
+	static float CalculateTimeToApex(float ApexHeight);
 };
