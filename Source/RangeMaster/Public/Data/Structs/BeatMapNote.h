@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "BeatMapTypes.h"
 #include "Engine/DataTable.h"
-#include "BeatMapData.generated.h"
+#include "BeatMapNote.generated.h"
 
 USTRUCT(BlueprintType)
-struct FBeatMapData
+struct FBeatMapNote
 {
 	GENERATED_BODY()
 
@@ -34,5 +34,5 @@ struct FBeatMap
 	FBeatMapSettings Settings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FBeatMapData> Notes;
+	TArray<FBeatMapNote> Notes;
 };

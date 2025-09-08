@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Structs/BeatMapData.h"
+#include "Data/Structs/BeatMapNote.h"
 #include "Data/Structs/TimeMapData.h"
 #include "Data/Structs/TrackDataRow.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -29,15 +29,15 @@ public:
 	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(const FBeatMap& BeatMap);
 
 private:
-	static float GetInitialBPM(const FBeatMapData& FirstBeatData);
-	static void ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
+	static float GetInitialBPM(const FBeatMapNote& FirstBeatData);
+	static void ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
 	
 	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
 	
 	static void UpdateCurrentTime(const float DeltaBeat, FBeatConversionState& ConversionState);
-	static void UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState);
+	static void UpdateBPMIfChanged(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState);
 	
-	static FTimeMapData CreateTimeMapData(const FBeatMapData& BeatData, const FBeatConversionState& State);
+	static FTimeMapData CreateTimeMapData(const FBeatMapNote& BeatData, const FBeatConversionState& State);
 	
 	static float CalculateShotPower(float ApexHeight);
 	static float CalculateApexHeight(float ShotPower);

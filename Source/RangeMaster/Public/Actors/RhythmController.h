@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Engine/DataTable.h"
-#include "Data/Structs/BeatMapData.h"
+#include "Data/Structs/BeatMapNote.h"
 #include "Actors/SpawnerManager.h"
 #include "Actors/Target.h"
 #include "Data/Structs/TimeMapData.h"

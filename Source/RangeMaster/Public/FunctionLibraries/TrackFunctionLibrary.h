@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Data/Structs/BeatMapData.h"
+#include "Data/Structs/BeatMapNote.h"
 #include "Data/Structs/BeatMapTypes.h"
 #include "Data/Structs/TrackInfo.h"
 #include "Kismet/BlueprintFunctionLibrary.h"

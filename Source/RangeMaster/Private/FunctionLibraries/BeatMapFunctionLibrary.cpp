@@ -18,7 +18,7 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	ConversionState.CurrentBPM = BeatMap.Settings.StartBPM;
 	ConversionState.CurrentPower = BeatMap.Settings.DefaultPower;
 
-	for (const FBeatMapData& Data: BeatMap.Notes)
+	for (const FBeatMapNote& Data: BeatMap.Notes)
 	{
 		ProcessBeatData(Data, ConversionState, BeatTimes);
 	}
@@ -26,12 +26,12 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	return BeatTimes;
 }
 
-float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapData& FirstBeatData)
+float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapNote& FirstBeatData)
 {
 	return FirstBeatData.BPM > 0.0f ? FirstBeatData.BPM : 120.0f;
 }
 
-void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState,
+void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState,
                                               TArray<FTimeMapData>& OutBeatTimes)
 {
 	const float DeltaBeat = CalculateDeltaBeat(BeatData.Beat, ConversionState.PreviousBeat);
@@ -58,7 +58,7 @@ void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConv
 	}
 }
 
-void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapData& BeatData, FBeatConversionState& ConversionState)
+void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState)
 {
 	if (BeatData.BPM > 0.0f)
 	{
@@ -66,7 +66,7 @@ void UBeatMapFunctionLibrary::UpdateBPMIfChanged(const FBeatMapData& BeatData, F
 	}
 }
 
-FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapData& BeatData, const FBeatConversionState& State)
+FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& BeatData, const FBeatConversionState& State)
 {
 	FTimeMapData NewTimeData;
 	NewTimeData.SpawnerID = BeatData.SpawnerID;
