@@ -2,6 +2,7 @@
 
 #include "BeatMapNote.h"
 #include "BeatMapSettings.h"
+#include "BeatMap.generated.h"
 
 USTRUCT(BlueprintType)
 struct FBeatMap
