@@ -70,20 +70,14 @@ float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapData& FirstBeatData)
 void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapData& BeatData, FBeatConversionState& ConversionState,
                                               TArray<FTimeMapData>& OutBeatTimes)
 {
-	const float Beat = CalculateTotalBeat(BeatData);
-	const float DeltaBeat = CalculateDeltaBeat(Beat, ConversionState.PreviousBeat);
+	const float DeltaBeat = CalculateDeltaBeat(BeatData.Beat, ConversionState.PreviousBeat);
 
 	UpdateCurrentTime(DeltaBeat, ConversionState);
 	UpdateBPMIfChanged(BeatData, ConversionState);
 
 	OutBeatTimes.Add(CreateTimeMapData(BeatData, ConversionState.CurrentTime));
 
-	ConversionState.PreviousBeat = Beat;
-}
-
-float UBeatMapFunctionLibrary::CalculateTotalBeat(const FBeatMapData& BeatData)
-{
-	return BeatData.BeatIndex + BeatData.BeatFraction;
+	ConversionState.PreviousBeat = BeatData.Beat;
 }
 
 float UBeatMapFunctionLibrary::CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat)

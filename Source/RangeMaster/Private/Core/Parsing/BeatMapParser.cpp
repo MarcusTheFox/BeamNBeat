@@ -91,7 +91,7 @@ void FBeatMapParser::ParseHeader(const TArray<FString>& Lines, int32& InOutLineI
 				else if (Key.Equals("power", ESearchCase::IgnoreCase))
 					OutSettings.DefaultPower = FCString::Atoi(*Value);
 				else if (Key.Equals(TEXT("offset"), ESearchCase::IgnoreCase))
-					OutSettings.TimeOffsetMs = FCString::Atof(*Value); 
+					OutSettings.TimeOffset = FCString::Atof(*Value); 
 			}
 		}
 	}
@@ -109,8 +109,7 @@ void FBeatMapParser::ParseNotes(const TArray<FString>& Lines, int32 StartLineInd
 		FBeatMapData InitialBpmMarker;
 		InitialBpmMarker.SpawnerID = -1;
 		InitialBpmMarker.ShotPower = 0;
-		InitialBpmMarker.BeatIndex = 0;
-		InitialBpmMarker.BeatFraction = 0.0f;
+		InitialBpmMarker.Beat = 0;
 		InitialBpmMarker.BPM = CurrentBPM;
 		OutBeatMap.Add(InitialBpmMarker);
 	}
@@ -167,8 +166,7 @@ void FBeatMapParser::ParseNotes(const TArray<FString>& Lines, int32 StartLineInd
 			FBeatMapData BpmMarker;
 			BpmMarker.SpawnerID = -1;
 			BpmMarker.ShotPower = 0;
-			BpmMarker.BeatIndex = FMath::FloorToInt(TotalBeat);
-			BpmMarker.BeatFraction = TotalBeat - BpmMarker.BeatIndex;
+			BpmMarker.Beat = TotalBeat;
 			BpmMarker.BPM = BpmForNextNote;
 			OutBeatMap.Add(BpmMarker);
 		}
@@ -190,8 +188,7 @@ void FBeatMapParser::ParseNoteEvent(const FString& NoteEventString, float TotalB
 
 		FBeatMapData NewData;
 		NewData.ShotPower = Settings.DefaultPower;
-		NewData.BeatIndex = FMath::FloorToInt(TotalBeat);
-		NewData.BeatFraction = TotalBeat - NewData.BeatIndex;
+		NewData.Beat = TotalBeat;
 		NewData.BPM = 0.0f;
 
 		if (BpmForThisTimestamp > 0.0f && !bBpmApplied)
