@@ -26,11 +26,6 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	return BeatTimes;
 }
 
-float UBeatMapFunctionLibrary::GetInitialBPM(const FBeatMapNote& FirstBeatData)
-{
-	return FirstBeatData.Bpm > 0.0f ? FirstBeatData.Bpm : 120.0f;
-}
-
 void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState,
                                               TArray<FTimeMapData>& OutBeatTimes)
 {

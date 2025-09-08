@@ -30,7 +30,6 @@ public:
 	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(const FBeatMap& BeatMap);
 
 private:
-	static float GetInitialBPM(const FBeatMapNote& FirstBeatData);
 	static void ProcessBeatData(const FBeatMapNote& BeatData, FBeatConversionState& ConversionState, TArray<FTimeMapData>& OutBeatTimes);
 	
 	static float CalculateDeltaBeat(const float CurrentBeat, const float PreviousBeat);
