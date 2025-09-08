@@ -5,43 +5,6 @@
 
 #include "PhysicsEngine/PhysicsSettings.h"
 
-template <typename T>
-TArray<T> UBeatMapFunctionLibrary::GetDataFromDataTable(UDataTable* DataTable)
-{
-	TArray<T> Data;
-	
-	if (DataTable)
-	{
-		TArray<T*> RowPtrs;
-		DataTable->GetAllRows<T>(TEXT("GetDataFromDataTable"), RowPtrs);
-		
-		for (T* RowPtr : RowPtrs)
-		{
-			if (RowPtr)
-			{
-				Data.Add(*RowPtr);
-			}
-		}
-	}
-	
-	return Data;
-}
-
-TArray<FTrackDataRow> UBeatMapFunctionLibrary::GetTrackData(UDataTable* TrackDataTable)
-{
-	return GetDataFromDataTable<FTrackDataRow>(TrackDataTable);
-}
-
-TArray<FBeatMapData> UBeatMapFunctionLibrary::GetBeatMapData(UDataTable* BeatMapTable)
-{
-	return GetDataFromDataTable<FBeatMapData>(BeatMapTable);
-}
-
-TArray<FTimeMapData> UBeatMapFunctionLibrary::GetTimeMapData(UDataTable* BeatMapTable)
-{
-	return ConvertBeatMapToBeatTimes(GetBeatMapData(BeatMapTable), 0);
-}
-
 TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffset)
 {
 	TArray<FTimeMapData> BeatTimes;

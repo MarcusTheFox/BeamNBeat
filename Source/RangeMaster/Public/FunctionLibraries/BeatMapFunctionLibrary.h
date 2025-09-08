@@ -25,17 +25,6 @@ class RANGEMASTER_API UBeatMapFunctionLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	template <typename T>
-	static TArray<T> GetDataFromDataTable(UDataTable* DataTable);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static TArray<FTrackDataRow> GetTrackData(UDataTable* TrackDataTable);
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	static TArray<FBeatMapData> GetBeatMapData(UDataTable* BeatMapTable);
-
-	static TArray<FTimeMapData> GetTimeMapData(UDataTable* BeatMapTable);
-	
 	static TArray<FTimeMapData> ConvertBeatMapToBeatTimes(TArray<FBeatMapData> BeatMapData, float TimeOffset);
 
 private:
