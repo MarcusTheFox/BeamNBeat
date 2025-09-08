@@ -15,5 +15,5 @@ struct FBeatMapSettings
 	int32 DefaultPower = 1500;
     
 	UPROPERTY(BlueprintReadWrite, Category="BeatMap Settings")
-	float TimeOffsetMs = 0.0f;
+	float TimeOffset = 0.0f;
 };

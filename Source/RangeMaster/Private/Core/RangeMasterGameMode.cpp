@@ -64,7 +64,7 @@ void ARangeMasterGameMode::SetGameTrack(const FTrackInfo& TrackInfo)
     if (!UTrackFunctionLibrary::GetSoundWaveFromRawAudioData(CachedRawAudioData, SoundWave)) return;
 
     const TArray<FTimeMapData> TimeMap = UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(
-        BeatMap, BeatMapSettings.TimeOffsetMs);
+        BeatMap, BeatMapSettings.TimeOffset);
     
     RhythmController->PrepareTrack(SoundWave, TimeMap);
 }
