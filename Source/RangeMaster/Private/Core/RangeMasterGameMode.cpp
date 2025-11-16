@@ -5,6 +5,7 @@
 #include "FunctionLibraries/GameSaveFunctionLibrary.h"
 #include "FunctionLibraries/RankFunctionLibrary.h"
 #include "FunctionLibraries/TrackFunctionLibrary.h"
+#include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settings/RangeMasterProjectSettings.h"
 
@@ -54,6 +55,7 @@ void ARangeMasterGameMode::SetGameTrack(const FTrackInfo& TrackInfo)
 {
     CurrentTrackData = TrackInfo;
     CachedRawAudioData.Empty();
+    CachedPreSpawnTargets.Empty();
 
     FBeatMap BeatMap;
     USoundWave* SoundWave;
@@ -62,9 +64,23 @@ void ARangeMasterGameMode::SetGameTrack(const FTrackInfo& TrackInfo)
     if (!UTrackFunctionLibrary::GetRawAudioDataFromTrackInfo(TrackInfo, CachedRawAudioData)) return;
     if (!UTrackFunctionLibrary::GetSoundWaveFromRawAudioData(CachedRawAudioData, SoundWave)) return;
 
-    const TArray<FTimeMapData> TimeMap = UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(BeatMap);
+    const TArray<FTimeMapData> FullTimeMap = UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(BeatMap);
     
-    RhythmController->PrepareTrack(SoundWave, TimeMap);
+    TArray<FTimeMapData> InGameTimeMap;
+
+    for (const FTimeMapData& Data : FullTimeMap)
+    {
+        if (Data.Time < 0.0f)
+        {
+            CachedPreSpawnTargets.Add(Data);
+        }
+        else
+        {
+            InGameTimeMap.Add(Data);
+        }
+    }
+    
+    RhythmController->PrepareTrack(SoundWave, InGameTimeMap);
 }
 
 void ARangeMasterGameMode::StartGameRequest_Implementation()
@@ -110,9 +126,7 @@ void ARangeMasterGameMode::ForceStopGame_Implementation()
     bIsGameInProgress = false;
     bWasForceStopped = true;
     
-    GetWorld()->GetTimerManager().ClearTimer(PrepareTimerHandle);
-    GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
-    GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
+    GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
     
     if (RhythmController)
     {
@@ -218,6 +232,22 @@ void ARangeMasterGameMode::DestroyAllActiveTargets()
 void ARangeMasterGameMode::StartPreparePhase()
 {
     OnPreparePhaseStarted.Broadcast(); // UI: "Готовьтесь!"
+    const float TimeUntilMusicStarts = PreparePhaseTime + CountdownTime;
+
+    for (const FTimeMapData& PreSpawnData : CachedPreSpawnTargets)
+    {
+        const float SpawnDelay = TimeUntilMusicStarts + PreSpawnData.Time;
+
+        if (SpawnDelay > 0.0f)
+        {
+            FTimerHandle PreSpawnTimerHandle;
+            GetWorld()->GetTimerManager().SetTimer(PreSpawnTimerHandle, [this, PreSpawnData]()
+            {
+                OnBeatReceived(PreSpawnData);
+            }, SpawnDelay, false);
+        }
+    }
+
     GetWorld()->GetTimerManager().SetTimer(PrepareTimerHandle, this, &ARangeMasterGameMode::StartCountdown, PreparePhaseTime, false);
 }
 

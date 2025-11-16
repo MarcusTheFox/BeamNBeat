@@ -136,6 +136,9 @@ private:
     ASpawnerManager* SpawnerManager = nullptr;
 
     UPROPERTY()
+    TArray<FTimeMapData> CachedPreSpawnTargets;
+
+    UPROPERTY()
     TArray<TObjectPtr<ASpawner>> CachedSpawners;
 
     UPROPERTY()
