@@ -128,7 +128,7 @@ void ARangeMasterGameMode::EndGame()
 
     bIsGameInProgress = false;
 
-    const FName TrackID = CurrentTrackData.TrackID;
+    const FName TrackID = CurrentTrackData.ID;
     const int32 Score = ScoreSystem ? ScoreSystem->GetScore() : 0;
     const int32 MaxScore = URankFunctionLibrary::CalculateMaxScore(CurrentTrackData.TotalTargets);
     const ETrackRank Rank = URankFunctionLibrary::CalculateTrackRank(Score, MaxScore);

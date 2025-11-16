@@ -1,16 +1,16 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "BeatMapDefaults.generated.h"
+#include "NoteProperties.generated.h"
 
 USTRUCT(BlueprintType)
-struct FBeatMapDefaults
+struct FNoteProperties
 {
 	GENERATED_BODY()
 
 	UPROPERTY()
-	float Bpm = 0.0f;
-    
-	UPROPERTY()
 	int32 Power = 0;
+
+	UPROPERTY()
+	int32 Bpm = 0;
 };

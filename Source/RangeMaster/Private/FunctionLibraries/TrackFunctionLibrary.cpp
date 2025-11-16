@@ -4,6 +4,7 @@
 #include "FunctionLibraries/TrackFunctionLibrary.h"
 
 #include "JsonObjectConverter.h"
+#include "Algo/Count.h"
 #include "Settings/RangeMasterProjectSettings.h"
 #include "Sound/SoundWaveProcedural.h"
 
@@ -33,22 +34,39 @@ TArray<FTrackInfo> UTrackFunctionLibrary::LoadAllTracksMetadata(const FString& D
 		}
 		
 		const FString TrackFolder = FPaths::GetPath(FilePath);
-		const FString AudioPath = FPaths::Combine(TrackFolder, TrackInfo.AudioFile);
-		const FString BeatMapPath = FPaths::Combine(TrackFolder, TrackInfo.BeatMapFile);
+		const FString AudioPath = FPaths::Combine(TrackFolder, TrackInfo.AudioInfo.FileName);
+		const FString BeatMapPath = FPaths::Combine(TrackFolder, TrackInfo.LevelInfo.BeatmapFileName);
+
+		FBeatMap BeatMap;
+		if (!GetBeatMapFromTrackInfo(TrackInfo, BeatMap))
+		{
+			UE_LOG(LogTemp, Warning,
+				   TEXT("Skipping track '%s' because its beatmap file could not be read"
+				   ), *TrackInfo.LevelInfo.BeatmapFileName);
+			continue;
+		}
 				
 		TrackInfo.Duration = GetWavDurationSeconds(AudioPath);
+		TrackInfo.Bpm = BeatMap.Settings.Bpm;
+		
+		const int32 DefaultPower = BeatMap.Settings.Properties.Power;
+		TrackInfo.TotalTargets = Algo::CountIf(BeatMap.Notes, [&DefaultPower](const FBeatMapNote& Note)
+		{
+			const int32 EffectivePower = Note.Properties.Power > 0 ? Note.Properties.Power : DefaultPower;
+			return EffectivePower > 0;
+		});
 				
-		if (TrackInfo.Duration > 0)
+		if (TrackInfo.Duration > 0 || TrackInfo.Bpm > 0)
 		{
 			FoundTracks.Add(TrackInfo);
 			UE_LOG(LogTemp, Log, TEXT("Successfully loaded metadata for track: %s"),
-			       *TrackInfo.DisplayName.ToString());
+			       *TrackInfo.AudioInfo.Title.ToString());
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning,
 			       TEXT("Skipping track '%s' because its audio file could not be read or has zero duration: %s"
-			       ), *TrackInfo.DisplayName.ToString(), *TrackInfo.AudioFile);
+			       ), *TrackInfo.AudioInfo.Title.ToString(), *TrackInfo.AudioInfo.FileName);
 		}
 	}
 	return FoundTracks;
@@ -57,19 +75,19 @@ TArray<FTrackInfo> UTrackFunctionLibrary::LoadAllTracksMetadata(const FString& D
 bool UTrackFunctionLibrary::LoadBeatMapForTrack(const FTrackInfo& Track, const FString& TracksDirectory,
 	FBeatMap& OutBeatMap)
 {
-	if (Track.BeatMapFile.IsEmpty())
+	if (Track.LevelInfo.BeatmapFileName.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Cannot load beatmap. File path is invalid or file does not exist: %s"),
-		       *Track.BeatMapFile);
+		       *Track.LevelInfo.BeatmapFileName);
 		return false;
 	}
 
-	FString BeatMapPath = FPaths::Combine(TracksDirectory, Track.TrackID.ToString(), Track.BeatMapFile);
+	FString BeatMapPath = FPaths::Combine(TracksDirectory, Track.ID.ToString(), Track.LevelInfo.BeatmapFileName);
 
 	FString JsonString;
 	if (!FFileHelper::LoadFileToString(JsonString, *BeatMapPath))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to read beatmap file to string: %s"), *Track.BeatMapFile);
+		UE_LOG(LogTemp, Error, TEXT("Failed to read beatmap file to string: %s"), *Track.LevelInfo.BeatmapFileName);
 		return false;
 	}
 	return FJsonObjectConverter::JsonObjectStringToUStruct(JsonString, &OutBeatMap, 0, 0);
@@ -148,7 +166,7 @@ bool UTrackFunctionLibrary::GetBeatMapFromTrackInfo(const FTrackInfo& TrackInfo,
 {
 	if (!LoadBeatMapForTrack(TrackInfo, GetTracksDirectory(), OutBeatMap))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load beatmap for track: %s"), *TrackInfo.TrackID.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Failed to load beatmap for track: %s"), *TrackInfo.ID.ToString());
 		return false;
 	}
 	return true;
@@ -159,7 +177,7 @@ bool UTrackFunctionLibrary::GetSoundWaveFromTrackInfo(FTrackInfo TrackInfo, USou
 	OutSoundWave = CreateProceduralSoundWave(GetAudioPathFromTrackInfo(TrackInfo));
 	if (!OutSoundWave)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load audio for track: %s"), *TrackInfo.TrackID.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Failed to load audio for track: %s"), *TrackInfo.ID.ToString());
 		return false;
 	}
 	return true;
@@ -198,7 +216,7 @@ FString UTrackFunctionLibrary::GetTracksDirectory()
 
 FString UTrackFunctionLibrary::GetAudioPathFromTrackInfo(const FTrackInfo& TrackInfo)
 {
-	return FPaths::Combine(GetTracksDirectory(), TrackInfo.TrackID.ToString(), TrackInfo.AudioFile);
+	return FPaths::Combine(GetTracksDirectory(), TrackInfo.ID.ToString(), TrackInfo.AudioInfo.FileName);
 }
 
 bool UTrackFunctionLibrary::LoadAndParseWavInfo(const FString& FilePath, TArray<uint8>& OutRawData,

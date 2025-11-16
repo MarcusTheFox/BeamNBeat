@@ -17,7 +17,7 @@ struct FBeatConversionState
 
 	double Time;
 	float PreviousBeat;
-	FBeatMapDefaults Defaults;
+	FBeatMapSettings Defaults;
 };
 
 UCLASS()

@@ -16,7 +16,8 @@ TArray<FTimeMapData> UBeatMapFunctionLibrary::ConvertBeatMapToBeatTimes(const FB
 	ConversionState.Time = BeatMap.Settings.Offset;
 	ConversionState.PreviousBeat = 0.0f;
 	ConversionState.Defaults.Bpm = BeatMap.Settings.Bpm;
-	ConversionState.Defaults.Power = BeatMap.Settings.Power;
+	ConversionState.Defaults.Offset = BeatMap.Settings.Offset;
+	ConversionState.Defaults.Properties.Power = BeatMap.Settings.Properties.Power;
 
 	for (const FBeatMapNote& Data: BeatMap.Notes)
 	{
@@ -55,21 +56,21 @@ void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConv
 
 void UBeatMapFunctionLibrary::UpdateDefaultsIfChanged(const FBeatMapNote& Note, FBeatConversionState& State)
 {
-	if (Note.Defaults.Bpm > 0.0f)
+	if (Note.Properties.Bpm > 0.0f)
 	{
-		State.Defaults.Bpm = Note.Defaults.Bpm;
+		State.Defaults.Bpm = Note.Properties.Bpm;
 	}
-	if (Note.Defaults.Power > 0.0f)
+	if (Note.Properties.Power > 0.0f)
 	{
-		State.Defaults.Power = Note.Defaults.Power;
+		State.Defaults.Properties.Power = Note.Properties.Power;
 	}
 }
 
 FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& Note, const FBeatConversionState& State)
 {
 	FTimeMapData NewTimeData;
-	NewTimeData.SpawnerID = Note.Id;
-	NewTimeData.ShotPower = Note.Power == 0 ? State.Defaults.Power : Note.Power;
+	NewTimeData.SpawnerID = Note.ID;
+	NewTimeData.ShotPower = Note.Properties.Power == 0 ? State.Defaults.Properties.Power : Note.Properties.Power;
 	const float Apex = CalculateApexHeight(NewTimeData.ShotPower);
 	NewTimeData.Time = State.Time - CalculateTimeToApex(Apex);
 	UE_LOG(LogTemp, Display, TEXT("SpawnerID: %d | Time: %f"), NewTimeData.SpawnerID, NewTimeData.Time);
