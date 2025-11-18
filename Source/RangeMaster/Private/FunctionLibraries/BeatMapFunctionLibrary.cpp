@@ -33,7 +33,8 @@ void UBeatMapFunctionLibrary::ProcessBeatData(const FBeatMapNote& Note, FBeatCon
 	const float DeltaBeat = CalculateDeltaBeat(Note.Beat, State.PreviousBeat);
 
 	UpdateCurrentTime(DeltaBeat, State);
-	UpdateDefaultsIfChanged(Note, State);
+	
+	// UpdateDefaultsIfChanged(Note, State);
 
 	OutBeatTimes.Add(CreateTimeMapData(Note, State));
 
@@ -56,14 +57,20 @@ void UBeatMapFunctionLibrary::UpdateCurrentTime(const float DeltaBeat, FBeatConv
 
 void UBeatMapFunctionLibrary::UpdateDefaultsIfChanged(const FBeatMapNote& Note, FBeatConversionState& State)
 {
-	if (Note.Properties.Bpm > 0.0f)
-	{
-		State.Defaults.Bpm = Note.Properties.Bpm;
-	}
-	if (Note.Properties.Power > 0.0f)
-	{
-		State.Defaults.Properties.Power = Note.Properties.Power;
-	}
+	/** 
+	 * Нужно поле Defaults у ноты, которое будет обновлять значения по умолчанию.
+	 * Если добавлять, то и редактор тоже надо обновить.
+	 * Пока отключено. 
+	 */
+	
+	// if (Note.Defaults.Bpm > 0.0f)
+	// {
+	// 	State.Defaults.Bpm = Note.Defaults.Bpm;
+	// }
+	// if (Note.Defaults.Properties.Power > 0.0f)
+	// {
+	// 	State.Defaults.Properties.Power = Note.Defaults.Properties.Power;
+	// }
 }
 
 FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& Note, const FBeatConversionState& State)
