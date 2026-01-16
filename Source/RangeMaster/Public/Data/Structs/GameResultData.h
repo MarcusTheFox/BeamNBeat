@@ -18,7 +18,4 @@ struct FGameResultData
 
     UPROPERTY(BlueprintReadOnly)
     int32 MaxCombo = 0;
-
-    UPROPERTY(BlueprintReadOnly)
-    TMap<EJudgement, int32> JudgementCounts;
 }; 

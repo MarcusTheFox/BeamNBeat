@@ -13,6 +13,7 @@
 ARangeMasterGameMode::ARangeMasterGameMode()
 {
     ScoreSystem = CreateDefaultSubobject<UScoreSystemComponent>(TEXT("ScoreSystem"));
+    JudgementSystem = CreateDefaultSubobject<UJudgementSystemComponent>(TEXT("JudgementSystem"));
 }
 
 void ARangeMasterGameMode::BeginPlay()
@@ -91,8 +92,8 @@ void ARangeMasterGameMode::StartGameRequest_Implementation()
     bWasForceStopped = false;
     bMusicHasFinished = false;
     
-    ResetJudgementCounts();
-    TrackJudgements.Empty();
+    JudgementSystem->ClearJudgements();
+    
     if (ScoreSystem)
     {
         ScoreSystem->ResetAllStats();
@@ -150,14 +151,13 @@ void ARangeMasterGameMode::EndGame()
     
     if (!bWasForceStopped)
     {
-        UGameSaveFunctionLibrary::SaveTrackResult(TrackID, Score, Rank, TrackJudgements);
+        UGameSaveFunctionLibrary::SaveTrackResult(TrackID, Score, Rank, JudgementSystem->GetJudgementEvents());
     }
     
     FGameResultData Result;
     Result.Score = Score;
     Result.Rank = Rank;
     Result.MaxCombo = ScoreSystem ? ScoreSystem->GetMaxCombo() : 0;
-    Result.JudgementCounts = JudgementCounts;
 
     OnGameFinished.Broadcast(Result);
 }
@@ -174,28 +174,6 @@ void ARangeMasterGameMode::OnBeatReceived(const FTimeMapData& TimeMapData)
         ActiveTargets.Add(SpawnedTarget);
     }
 }
-
-void ARangeMasterGameMode::RegisterJudgement(EJudgement Judgement)
-{
-    if (!bIsGameInProgress) return;
-
-    TrackJudgements.Add(Judgement);
-    
-    int32& Count = JudgementCounts.FindOrAdd(Judgement);
-    Count++;
-    OnJudgementRegistered.Broadcast(Judgement);
-}
-
-int32 ARangeMasterGameMode::GetJudgementCount(EJudgement Judgement) const
-{
-    const int32* Count = JudgementCounts.Find(Judgement);
-    return Count ? *Count : 0;
-}
-
-void ARangeMasterGameMode::ResetJudgementCounts()
-{
-    JudgementCounts.Empty();
-} 
 
 void ARangeMasterGameMode::HandleMusicFinished()
 {
@@ -215,7 +193,7 @@ void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
         ScoreSystem->IncreaseCombo();
         const UBeamNBeatScoreSettings* Settings = UBeamNBeatScoreSettings::Get();
         ScoreSystem->AddScore(Settings->BasePoints * ScoreSystem->GetComboMultiplier());
-        RegisterJudgement(EJudgement::Perfect);
+        JudgementSystem->RegisterJudgement(EJudgement::Perfect);
     }
 }
 

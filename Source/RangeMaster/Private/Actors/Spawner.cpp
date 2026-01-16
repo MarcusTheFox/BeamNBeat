@@ -56,7 +56,7 @@ void ASpawner::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
         ARangeMasterGameMode* GM = UGameUtilityFunctionLibrary::GetRangeMasterGameMode(this);
         if (GM)
         {
-            GM->RegisterJudgement(EJudgement::Lost);
+            GM->JudgementSystem->RegisterJudgement(EJudgement::Lost);
             if (GM->ScoreSystem)
             {
                 GM->ScoreSystem->ResetCombo();
