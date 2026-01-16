@@ -6,14 +6,14 @@
 #include "FunctionLibraries/RankFunctionLibrary.h"
 #include "FunctionLibraries/TrackFunctionLibrary.h"
 #include "TimerManager.h"
+#include "FunctionLibraries/GameUtilityFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Settings/BeamNBeatScoreSettings.h"
 #include "Settings/RangeMasterProjectSettings.h"
 
 ARangeMasterGameMode::ARangeMasterGameMode()
 {
-    ScoreSystem = CreateDefaultSubobject<UScoreSystemComponent>(TEXT("ScoreSystem"));
-    JudgementSystem = CreateDefaultSubobject<UJudgementSystemComponent>(TEXT("JudgementSystem"));
+    PlayerStateClass = ABeamNBeatPlayerState::StaticClass();
 }
 
 void ARangeMasterGameMode::BeginPlay()
@@ -21,6 +21,7 @@ void ARangeMasterGameMode::BeginPlay()
     Super::BeginPlay();
     RhythmController = Cast<ARhythmController>(UGameplayStatics::GetActorOfClass(this, ARhythmController::StaticClass()));
     SpawnerManager = Cast<ASpawnerManager>(UGameplayStatics::GetActorOfClass(this, ASpawnerManager::StaticClass()));
+    PlayerState = UGameUtilityFunctionLibrary::GetBeamNBeatPlayerState(this);
     const URangeMasterProjectSettings* ProjectSettings = URangeMasterProjectSettings::Get();
 
     if (!RhythmController || !SpawnerManager || !ProjectSettings) return;
@@ -91,13 +92,9 @@ void ARangeMasterGameMode::StartGameRequest_Implementation()
     
     bWasForceStopped = false;
     bMusicHasFinished = false;
-    
-    JudgementSystem->ClearJudgements();
-    
-    if (ScoreSystem)
-    {
-        ScoreSystem->ResetAllStats();
-    }
+
+    PlayerState->JudgementSystem->ClearJudgements();
+    PlayerState->ScoreSystem->ResetAllStats();
     
     StartPreparePhase();
 }
@@ -144,20 +141,22 @@ void ARangeMasterGameMode::EndGame()
 
     bIsGameInProgress = false;
 
+    const int32 Score = PlayerState->ScoreSystem->GetScore();
+    const int32 MaxCombo = PlayerState->ScoreSystem->GetMaxCombo();
+    
     const FName TrackID = CurrentTrackData.ID;
-    const int32 Score = ScoreSystem ? ScoreSystem->GetScore() : 0;
     const int32 MaxScore = URankFunctionLibrary::CalculateMaxScore(CurrentTrackData.TotalTargets);
     const ETrackRank Rank = URankFunctionLibrary::CalculateTrackRank(Score, MaxScore);
     
     if (!bWasForceStopped)
     {
-        UGameSaveFunctionLibrary::SaveTrackResult(TrackID, Score, Rank, JudgementSystem->GetJudgementEvents());
+        UGameSaveFunctionLibrary::SaveTrackResult(TrackID, Score, Rank, PlayerState->JudgementSystem->GetJudgementEvents());
     }
     
     FGameResultData Result;
     Result.Score = Score;
     Result.Rank = Rank;
-    Result.MaxCombo = ScoreSystem ? ScoreSystem->GetMaxCombo() : 0;
+    Result.MaxCombo = MaxCombo;
 
     OnGameFinished.Broadcast(Result);
 }
@@ -190,10 +189,14 @@ void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
 {
     if (Target)
     {
-        ScoreSystem->IncreaseCombo();
+        PlayerState->ScoreSystem->IncreaseCombo();
+
         const UBeamNBeatScoreSettings* Settings = UBeamNBeatScoreSettings::Get();
-        ScoreSystem->AddScore(Settings->BasePoints * ScoreSystem->GetComboMultiplier());
-        JudgementSystem->RegisterJudgement(EJudgement::Perfect);
+        const int32 Points = Settings->BasePoints;
+        const int32 ComboMultiplier = PlayerState->ScoreSystem->GetComboMultiplier();
+
+        PlayerState->ScoreSystem->AddScore(Points * ComboMultiplier);
+        PlayerState->JudgementSystem->RegisterJudgement(EJudgement::Perfect);
     }
 }
 

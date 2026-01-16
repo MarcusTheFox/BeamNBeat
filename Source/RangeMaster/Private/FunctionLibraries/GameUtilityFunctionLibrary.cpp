@@ -25,8 +25,16 @@ FText UGameUtilityFunctionLibrary::SecondsToTime(float Seconds)
 ARangeMasterGameMode* UGameUtilityFunctionLibrary::GetRangeMasterGameMode(const UObject* WorldContextObject)
 {
     if (!WorldContextObject) return nullptr;
-    UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
+    const UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
     return Cast<ARangeMasterGameMode>(UGameplayStatics::GetGameMode(World));
+}
+
+ABeamNBeatPlayerState* UGameUtilityFunctionLibrary::GetBeamNBeatPlayerState(const UObject* WorldContextObject,
+	const int32 PlayerStateIndex)
+{
+    if (!WorldContextObject) return nullptr;
+    const UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
+	return Cast<ABeamNBeatPlayerState>(UGameplayStatics::GetPlayerState(World, PlayerStateIndex));
 }
 
 FString UGameUtilityFunctionLibrary::GetGameVersion()

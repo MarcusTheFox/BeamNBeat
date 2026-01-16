@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/BeamNBeatPlayerState.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GameUtilityFunctionLibrary.generated.h"
 
@@ -20,6 +21,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game", meta=(WorldContext="WorldContextObject"))
 	static class ARangeMasterGameMode* GetRangeMasterGameMode(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(WorldContext="WorldContextObject"))
+	static ABeamNBeatPlayerState* GetBeamNBeatPlayerState(const UObject* WorldContextObject,
+		const int32 PlayerStateIndex = 0);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static FString GetGameVersion();

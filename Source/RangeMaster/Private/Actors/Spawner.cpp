@@ -53,15 +53,11 @@ void ASpawner::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
     if (ATarget* Target = Cast<ATarget>(OtherActor))
     {
         Target->DestroyTarget();
-        ARangeMasterGameMode* GM = UGameUtilityFunctionLibrary::GetRangeMasterGameMode(this);
-        if (GM)
+        if (const ABeamNBeatPlayerState* PlayerState = UGameUtilityFunctionLibrary::GetBeamNBeatPlayerState(this))
         {
-            GM->JudgementSystem->RegisterJudgement(EJudgement::Lost);
-            if (GM->ScoreSystem)
-            {
-                GM->ScoreSystem->ResetCombo();
-                GM->ScoreSystem->SubtractScore(50);
-            }
+            PlayerState->JudgementSystem->RegisterJudgement(EJudgement::Lost);
+            PlayerState->ScoreSystem->ResetCombo();
+            PlayerState->ScoreSystem->SubtractScore(50);
         }
     }
 } 

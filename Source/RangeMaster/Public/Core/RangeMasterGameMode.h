@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BeamNBeatPlayerState.h"
 #include "Actors/RhythmController.h"
 #include "Components/JudgementSystemComponent.h"
 #include "Components/ScoreSystemComponent.h"
@@ -70,12 +71,6 @@ public:
 
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game")
     FOnPlayerLeaved OnPlayerLeaved;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
-    UScoreSystemComponent* ScoreSystem;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
-    UJudgementSystemComponent* JudgementSystem;
     
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
     FTrackInfo CurrentTrackData;
@@ -97,6 +92,10 @@ public:
 
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game|Countdown")
     FOnPreparePhaseFinished OnPreparePhaseFinished;
+
+protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
+    ABeamNBeatPlayerState* PlayerState;
 
 private:
     void EndGame();
