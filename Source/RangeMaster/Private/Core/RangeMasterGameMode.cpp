@@ -7,6 +7,7 @@
 #include "FunctionLibraries/TrackFunctionLibrary.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Settings/BeamNBeatScoreSettings.h"
 #include "Settings/RangeMasterProjectSettings.h"
 
 ARangeMasterGameMode::ARangeMasterGameMode()
@@ -212,7 +213,8 @@ void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
     if (Target)
     {
         ScoreSystem->IncreaseCombo();
-        ScoreSystem->AddScore(100 * ScoreSystem->GetComboMultiplier());
+        const UBeamNBeatScoreSettings* Settings = UBeamNBeatScoreSettings::Get();
+        ScoreSystem->AddScore(Settings->BasePoints * ScoreSystem->GetComboMultiplier());
         RegisterJudgement(EJudgement::Perfect);
     }
 }
