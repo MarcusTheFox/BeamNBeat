@@ -11,16 +11,7 @@ ATarget::ATarget()
 
 void ATarget::OnHit_Implementation()
 {
-    ARangeMasterGameMode* GM = UGameUtilityFunctionLibrary::GetRangeMasterGameMode(this);
-    if (GM && GM->ScoreSystem)
-    {
-        GM->ScoreSystem->IncreaseCombo();
-        GM->ScoreSystem->AddScore(Points * GM->ScoreSystem->GetComboMultiplier());
-    }
-    if (GM)
-    {
-        GM->RegisterJudgement(EJudgement::Perfect);
-    }
+    OnTargetHit.Broadcast(this);
     DestroyTarget();
 }
 

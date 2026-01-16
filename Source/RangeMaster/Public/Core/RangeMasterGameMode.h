@@ -124,6 +124,9 @@ private:
     UFUNCTION()
     void OnTargetDestroyed(ATarget* Target);
 
+    UFUNCTION()
+    void OnTargetHit(ATarget* Target);
+
     void StartPreparePhase();
     void StartCountdown();
     void CountdownTick();

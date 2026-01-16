@@ -169,6 +169,7 @@ void ARangeMasterGameMode::OnBeatReceived(const FTimeMapData& TimeMapData)
     if (SpawnedTarget)
     {
         SpawnedTarget->OnTargetDestroyed.AddDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
+        SpawnedTarget->OnTargetHit.AddDynamic(this, &ARangeMasterGameMode::OnTargetHit);
         ActiveTargets.Add(SpawnedTarget);
     }
 }
@@ -206,10 +207,21 @@ void ARangeMasterGameMode::HandleMusicFinished()
     }
 }
 
+void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
+{
+    if (Target)
+    {
+        ScoreSystem->IncreaseCombo();
+        ScoreSystem->AddScore(100 * ScoreSystem->GetComboMultiplier());
+        RegisterJudgement(EJudgement::Perfect);
+    }
+}
+
 void ARangeMasterGameMode::OnTargetDestroyed(ATarget* Target)
 {
     if (Target)
     {
+        Target->OnTargetHit.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetHit);
         Target->OnTargetDestroyed.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
         ActiveTargets.Remove(Target);
     }

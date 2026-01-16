@@ -6,6 +6,7 @@
 #include "Target.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDestroyed, ATarget*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetHit, ATarget*, Target);
 
 UCLASS()
 class ATarget : public AActor, public IHittableInterface
@@ -25,6 +26,6 @@ public:
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Target")
     FOnTargetDestroyed OnTargetDestroyed;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Target")
-    int32 Points = 100;
+    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Target")
+    FOnTargetHit OnTargetHit;
 }; 
