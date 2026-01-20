@@ -75,9 +75,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
     FTrackInfo CurrentTrackData;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
-    bool bIsGameInProgress = false;
-
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game|Countdown")
     FOnCountdownStarted OnCountdownStarted;
 

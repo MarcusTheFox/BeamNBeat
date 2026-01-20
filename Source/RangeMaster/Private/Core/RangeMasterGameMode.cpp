@@ -101,8 +101,6 @@ void ARangeMasterGameMode::StartGameRequest_Implementation()
 
 void ARangeMasterGameMode::ResetGameRequest()
 {
-    bIsGameInProgress = false;
-    
     GetWorld()->GetTimerManager().ClearTimer(PrepareTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
@@ -122,7 +120,6 @@ void ARangeMasterGameMode::ResetGameRequest()
 
 void ARangeMasterGameMode::ForceStopGame_Implementation()
 {
-    bIsGameInProgress = false;
     bWasForceStopped = true;
     
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
@@ -138,8 +135,6 @@ void ARangeMasterGameMode::ForceStopGame_Implementation()
 void ARangeMasterGameMode::EndGame()
 {
     GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
-
-    bIsGameInProgress = false;
 
     const int32 Score = PlayerState->ScoreSystem->GetScore();
     const int32 MaxCombo = PlayerState->ScoreSystem->GetMaxCombo();
@@ -277,8 +272,6 @@ void ARangeMasterGameMode::FinishCountdown()
     
     OnCountdownFinished.Broadcast(); // UI: "Старт!"
     OnGameStarted.Broadcast(); // Сигнал о начале игры
-
-    bIsGameInProgress = true;
 
     if (RhythmController)
     {
