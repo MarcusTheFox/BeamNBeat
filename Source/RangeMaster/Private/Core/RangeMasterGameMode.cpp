@@ -105,6 +105,12 @@ void ARangeMasterGameMode::ResetGameRequest()
     GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
 
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
+
     USoundWave* SoundWave;
     if (!UTrackFunctionLibrary::GetSoundWaveFromRawAudioData(CachedRawAudioData, SoundWave)) return;
     
@@ -123,6 +129,12 @@ void ARangeMasterGameMode::ForceStopGame_Implementation()
     bWasForceStopped = true;
     
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+    
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
     
     if (RhythmController)
     {
@@ -223,6 +235,12 @@ void ARangeMasterGameMode::StartPreparePhase()
 {
     OnPreparePhaseStarted.Broadcast(); // UI: "Готовьтесь!"
     const float TimeUntilMusicStarts = PreparePhaseTime + CountdownTime;
+    
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
 
     for (const FTimeMapData& PreSpawnData : CachedPreSpawnTargets)
     {
@@ -230,11 +248,16 @@ void ARangeMasterGameMode::StartPreparePhase()
 
         if (SpawnDelay > 0.0f)
         {
-            FTimerHandle PreSpawnTimerHandle;
-            GetWorld()->GetTimerManager().SetTimer(PreSpawnTimerHandle, [this, PreSpawnData]()
-            {
-                OnBeatReceived(PreSpawnData);
-            }, SpawnDelay, false);
+            FTimerDelegate TimerDelegate;
+            TimerDelegate.BindUFunction(this, FName("OnBeatReceived"), PreSpawnData);
+
+            FTimerHandle Handle;
+            GetWorld()->GetTimerManager().SetTimer(Handle, TimerDelegate, SpawnDelay, false);
+            PreSpawnTimerHandles.Add(Handle);
+        }
+        else
+        {
+            OnBeatReceived(PreSpawnData);
         }
     }
 

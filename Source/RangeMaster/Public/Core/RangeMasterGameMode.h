@@ -153,4 +153,7 @@ private:
     float CountdownTickInterval = 0.01f;
     float PreparePhaseTime = 2.0f;
     float EndGameTime = 1.0f;
+
+    UPROPERTY()
+    TArray<FTimerHandle> PreSpawnTimerHandles;
 }; 
