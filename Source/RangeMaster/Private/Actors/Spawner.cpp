@@ -55,9 +55,7 @@ void ASpawner::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
         Target->DestroyTarget();
         if (const ABeamNBeatPlayerState* PlayerState = UGameUtilityFunctionLibrary::GetBeamNBeatPlayerState(this))
         {
-            PlayerState->JudgementSystem->RegisterJudgement(EJudgement::Lost);
-            PlayerState->ScoreSystem->ResetCombo();
-            PlayerState->ScoreSystem->SubtractScore(50);
+            PlayerState->RegisterLost();
         }
     }
 } 

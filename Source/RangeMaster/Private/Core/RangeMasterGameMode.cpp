@@ -196,14 +196,7 @@ void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
 {
     if (Target)
     {
-        PlayerState->ScoreSystem->IncreaseCombo();
-
-        const UBeamNBeatScoreSettings* Settings = UBeamNBeatScoreSettings::Get();
-        const int32 Points = Settings->BasePoints;
-        const int32 ComboMultiplier = PlayerState->ScoreSystem->GetComboMultiplier();
-
-        PlayerState->ScoreSystem->AddScore(Points * ComboMultiplier);
-        PlayerState->JudgementSystem->RegisterJudgement(EJudgement::Perfect);
+        PlayerState->RegisterHit();
     }
 }
 
