@@ -175,8 +175,7 @@ void ARangeMasterGameMode::OnBeatReceived(const FTimeMapData& TimeMapData)
 
     if (SpawnedTarget)
     {
-        SpawnedTarget->OnTargetDestroyed.AddDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
-        SpawnedTarget->OnTargetHit.AddDynamic(this, &ARangeMasterGameMode::OnTargetHit);
+        SpawnedTarget->OnTargetEvent.AddDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
         ActiveTargets.Add(SpawnedTarget);
     }
 }
@@ -192,11 +191,21 @@ void ARangeMasterGameMode::HandleMusicFinished()
     }
 }
 
-void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
+void ARangeMasterGameMode::OnTargetEvent(ATarget* Target, const FTargetEventData& EventData)
 {
     if (Target)
     {
-        PlayerState->RegisterHit();
+        switch (EventData.TargetEventType) {
+            case ETargetEventType::Hit:
+                PlayerState->RegisterHit();
+                break;
+            case ETargetEventType::Lost:
+                PlayerState->RegisterLost();
+                break;
+            case ETargetEventType::Destroyed:
+                OnTargetDestroyed(Target);
+                break;
+        }
     }
 }
 
@@ -204,8 +213,7 @@ void ARangeMasterGameMode::OnTargetDestroyed(ATarget* Target)
 {
     if (Target)
     {
-        Target->OnTargetHit.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetHit);
-        Target->OnTargetDestroyed.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
+        Target->OnTargetEvent.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
         ActiveTargets.Remove(Target);
     }
 

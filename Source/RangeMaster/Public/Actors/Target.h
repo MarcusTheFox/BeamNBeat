@@ -1,12 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/Structs/TargetEventData.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/HittableInterface.h"
 #include "Target.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDestroyed, ATarget*, Target);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetHit, ATarget*, Target);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTargetEvent, ATarget*, Target, const FTargetEventData&, EventData);
 
 UCLASS()
 class ATarget : public AActor, public IHittableInterface
@@ -23,9 +23,9 @@ public:
     UFUNCTION(BlueprintCallable)
     void SetImpulse(const FVector& Impulse);
 
-    UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Target")
-    FOnTargetDestroyed OnTargetDestroyed;
+    UFUNCTION(BlueprintCallable)
+    void Lost();
 
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Target")
-    FOnTargetHit OnTargetHit;
+    FOnTargetEvent OnTargetEvent;
 }; 

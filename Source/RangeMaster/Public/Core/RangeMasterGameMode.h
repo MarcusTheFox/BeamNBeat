@@ -108,7 +108,7 @@ private:
     void OnTargetDestroyed(ATarget* Target);
 
     UFUNCTION()
-    void OnTargetHit(ATarget* Target);
+    void OnTargetEvent(ATarget* Target, const FTargetEventData& EventData);
 
     void StartPreparePhase();
     void StartCountdown();
