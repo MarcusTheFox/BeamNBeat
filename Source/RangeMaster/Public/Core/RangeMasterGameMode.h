@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "BeamNBeatPlayerState.h"
 #include "Actors/RhythmController.h"
-#include "Components/JudgementSystemComponent.h"
-#include "Components/ScoreSystemComponent.h"
+#include "Components/TargetSystemComponent.h"
 #include "Data/Structs/CountdownInfo.h"
 #include "Data/Structs/GameResultData.h"
 #include "Data/Structs/TimeMapData.h"
@@ -96,16 +95,12 @@ protected:
 
 private:
     void EndGame();
-    void DestroyAllActiveTargets();
     
-    UFUNCTION()
-    void OnBeatReceived(const FTimeMapData& TimeMapData);
-
     UFUNCTION()
     void HandleMusicFinished();
 
     UFUNCTION()
-    void OnTargetDestroyed(ATarget* Target);
+    void OnTargetDestroyed();
 
     UFUNCTION()
     void OnTargetEvent(ATarget* Target, const FTargetEventData& EventData);
@@ -116,6 +111,9 @@ private:
     void FinishCountdown();
 
     UPROPERTY()
+    UTargetSystemComponent* TargetSystemComponent;
+
+    UPROPERTY()
     ARhythmController* RhythmController = nullptr;
 
     UPROPERTY()
@@ -123,15 +121,6 @@ private:
 
     UPROPERTY()
     TArray<FTimeMapData> CachedPreSpawnTargets;
-
-    UPROPERTY()
-    TArray<TObjectPtr<ASpawner>> CachedSpawners;
-
-    UPROPERTY()
-    TArray<TObjectPtr<ATarget>> ActiveTargets;
-
-    UPROPERTY()
-    TSubclassOf<ATarget> TargetClass;
 
     FTransform InitialPlayerTransform;
 

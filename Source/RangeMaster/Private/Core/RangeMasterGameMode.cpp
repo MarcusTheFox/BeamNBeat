@@ -14,6 +14,7 @@
 ARangeMasterGameMode::ARangeMasterGameMode()
 {
     PlayerStateClass = ABeamNBeatPlayerState::StaticClass();
+    TargetSystemComponent = CreateDefaultSubobject<UTargetSystemComponent>("TargetSystemComponent");
 }
 
 void ARangeMasterGameMode::BeginPlay()
@@ -26,11 +27,12 @@ void ARangeMasterGameMode::BeginPlay()
 
     if (!RhythmController || !SpawnerManager || !ProjectSettings) return;
 
-    RhythmController->OnBeat.AddDynamic(this, &ARangeMasterGameMode::OnBeatReceived);
+    RhythmController->OnBeat.AddDynamic(TargetSystemComponent, &UTargetSystemComponent::SpawnTarget);
     RhythmController->OnMusicFinished.AddDynamic(this, &ARangeMasterGameMode::HandleMusicFinished);
-    
-    CachedSpawners = SpawnerManager->GetSpawners();
-    TargetClass = ProjectSettings->TargetClass;
+
+    TargetSystemComponent->SetSpawners(SpawnerManager->GetSpawners());
+    TargetSystemComponent->SetTargetClass(ProjectSettings->TargetClass);
+    TargetSystemComponent->OnTargetEvent.AddDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
 }
 
 void ARangeMasterGameMode::InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer)
@@ -119,7 +121,7 @@ void ARangeMasterGameMode::ResetGameRequest()
         RhythmController->Stop();
         RhythmController->ResetMusic(SoundWave);
     }
-    DestroyAllActiveTargets();
+    TargetSystemComponent->DestroyAllTargets();
     OnGameReset.Broadcast();
 }
 
@@ -140,7 +142,7 @@ void ARangeMasterGameMode::ForceStopGame_Implementation()
     {
         RhythmController->Stop();
     }
-    DestroyAllActiveTargets();
+    TargetSystemComponent->DestroyAllTargets();
     OnGameStopped.Broadcast();
 }
 
@@ -168,23 +170,11 @@ void ARangeMasterGameMode::EndGame()
     OnGameFinished.Broadcast(Result);
 }
 
-void ARangeMasterGameMode::OnBeatReceived(const FTimeMapData& TimeMapData)
-{
-    ASpawner* Spawner = CachedSpawners[TimeMapData.SpawnerID];
-    ATarget* SpawnedTarget = Spawner->SpawnTarget(TargetClass, TimeMapData.ShotPower);
-
-    if (SpawnedTarget)
-    {
-        SpawnedTarget->OnTargetEvent.AddDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
-        ActiveTargets.Add(SpawnedTarget);
-    }
-}
-
 void ARangeMasterGameMode::HandleMusicFinished()
 {
     bMusicHasFinished = true;
 
-    if (ActiveTargets.Num() == 0)
+    if (TargetSystemComponent->IsAllTargetsDestroyed())
     {
         GetWorld()->GetTimerManager().SetTimer(
             EndGameTimerHandle, this, &ARangeMasterGameMode::EndGame, EndGameTime, false);
@@ -203,32 +193,18 @@ void ARangeMasterGameMode::OnTargetEvent(ATarget* Target, const FTargetEventData
                 PlayerState->RegisterLost();
                 break;
             case ETargetEventType::Destroyed:
-                OnTargetDestroyed(Target);
+                OnTargetDestroyed();
                 break;
         }
     }
 }
 
-void ARangeMasterGameMode::OnTargetDestroyed(ATarget* Target)
+void ARangeMasterGameMode::OnTargetDestroyed()
 {
-    if (Target)
-    {
-        Target->OnTargetEvent.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
-        ActiveTargets.Remove(Target);
-    }
-
-    if (bMusicHasFinished && ActiveTargets.Num() == 0)
+    if (bMusicHasFinished && TargetSystemComponent->IsAllTargetsDestroyed())
     {
         GetWorld()->GetTimerManager().SetTimer(
             EndGameTimerHandle, this, &ARangeMasterGameMode::EndGame, EndGameTime, false);
-    }
-}
-
-void ARangeMasterGameMode::DestroyAllActiveTargets()
-{
-    for (ATarget* Target : ActiveTargets)
-    {
-        Target->DestroyTarget();
     }
 }
 
@@ -250,7 +226,7 @@ void ARangeMasterGameMode::StartPreparePhase()
         if (SpawnDelay > 0.0f)
         {
             FTimerDelegate TimerDelegate;
-            TimerDelegate.BindUFunction(this, FName("OnBeatReceived"), PreSpawnData);
+            TimerDelegate.BindUFunction(TargetSystemComponent, FName("SpawnTarget"), PreSpawnData);
 
             FTimerHandle Handle;
             GetWorld()->GetTimerManager().SetTimer(Handle, TimerDelegate, SpawnDelay, false);
@@ -258,7 +234,7 @@ void ARangeMasterGameMode::StartPreparePhase()
         }
         else
         {
-            OnBeatReceived(PreSpawnData);
+            TargetSystemComponent->SpawnTarget(PreSpawnData);
         }
     }
 
