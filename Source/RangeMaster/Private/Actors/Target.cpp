@@ -8,13 +8,13 @@ ATarget::ATarget()
 
 void ATarget::OnHit_Implementation()
 {
-    OnTargetHit.Broadcast(this);
+    OnTargetEvent.Broadcast(this, FTargetEventData::CreateHit());
     DestroyTarget();
 }
 
 void ATarget::DestroyTarget_Implementation()
 {
-    OnTargetDestroyed.Broadcast(this);
+    OnTargetEvent.Broadcast(this, FTargetEventData(ETargetEventType::Destroyed));
     Destroy();
 }
 
@@ -24,4 +24,10 @@ void ATarget::SetImpulse(const FVector& Impulse)
     {
         Prim->AddImpulse(Impulse, NAME_None, true);
     }
-} 
+}
+
+void ATarget::Lost()
+{
+    OnTargetEvent.Broadcast(this, FTargetEventData::CreateLost());
+    DestroyTarget();
+}

@@ -25,4 +25,15 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UJudgementSystemComponent* JudgementSystem;
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterHit() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterMiss() const;
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterLost() const;
+	
+	virtual void Reset() override;
 };

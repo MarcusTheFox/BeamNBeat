@@ -14,6 +14,7 @@
 ARangeMasterGameMode::ARangeMasterGameMode()
 {
     PlayerStateClass = ABeamNBeatPlayerState::StaticClass();
+    TargetSystemComponent = CreateDefaultSubobject<UTargetSystemComponent>("TargetSystemComponent");
 }
 
 void ARangeMasterGameMode::BeginPlay()
@@ -26,11 +27,12 @@ void ARangeMasterGameMode::BeginPlay()
 
     if (!RhythmController || !SpawnerManager || !ProjectSettings) return;
 
-    RhythmController->OnBeat.AddDynamic(this, &ARangeMasterGameMode::OnBeatReceived);
+    RhythmController->OnBeat.AddDynamic(TargetSystemComponent, &UTargetSystemComponent::SpawnTarget);
     RhythmController->OnMusicFinished.AddDynamic(this, &ARangeMasterGameMode::HandleMusicFinished);
-    
-    CachedSpawners = SpawnerManager->GetSpawners();
-    TargetClass = ProjectSettings->TargetClass;
+
+    TargetSystemComponent->SetSpawners(SpawnerManager->GetSpawners());
+    TargetSystemComponent->SetTargetClass(ProjectSettings->TargetClass);
+    TargetSystemComponent->OnTargetEvent.AddDynamic(this, &ARangeMasterGameMode::OnTargetEvent);
 }
 
 void ARangeMasterGameMode::InitStartSpot_Implementation(AActor* StartSpot, AController* NewPlayer)
@@ -101,11 +103,15 @@ void ARangeMasterGameMode::StartGameRequest_Implementation()
 
 void ARangeMasterGameMode::ResetGameRequest()
 {
-    bIsGameInProgress = false;
-    
     GetWorld()->GetTimerManager().ClearTimer(PrepareTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
     GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
+
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
 
     USoundWave* SoundWave;
     if (!UTrackFunctionLibrary::GetSoundWaveFromRawAudioData(CachedRawAudioData, SoundWave)) return;
@@ -115,31 +121,34 @@ void ARangeMasterGameMode::ResetGameRequest()
         RhythmController->Stop();
         RhythmController->ResetMusic(SoundWave);
     }
-    DestroyAllActiveTargets();
+    TargetSystemComponent->DestroyAllTargets();
     OnGameReset.Broadcast();
 }
 
 
 void ARangeMasterGameMode::ForceStopGame_Implementation()
 {
-    bIsGameInProgress = false;
     bWasForceStopped = true;
     
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+    
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
     
     if (RhythmController)
     {
         RhythmController->Stop();
     }
-    DestroyAllActiveTargets();
+    TargetSystemComponent->DestroyAllTargets();
     OnGameStopped.Broadcast();
 }
 
 void ARangeMasterGameMode::EndGame()
 {
     GetWorld()->GetTimerManager().ClearTimer(EndGameTimerHandle);
-
-    bIsGameInProgress = false;
 
     const int32 Score = PlayerState->ScoreSystem->GetScore();
     const int32 MaxCombo = PlayerState->ScoreSystem->GetMaxCombo();
@@ -161,66 +170,41 @@ void ARangeMasterGameMode::EndGame()
     OnGameFinished.Broadcast(Result);
 }
 
-void ARangeMasterGameMode::OnBeatReceived(const FTimeMapData& TimeMapData)
-{
-    ASpawner* Spawner = CachedSpawners[TimeMapData.SpawnerID];
-    ATarget* SpawnedTarget = Spawner->SpawnTarget(TargetClass, TimeMapData.ShotPower);
-
-    if (SpawnedTarget)
-    {
-        SpawnedTarget->OnTargetDestroyed.AddDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
-        SpawnedTarget->OnTargetHit.AddDynamic(this, &ARangeMasterGameMode::OnTargetHit);
-        ActiveTargets.Add(SpawnedTarget);
-    }
-}
-
 void ARangeMasterGameMode::HandleMusicFinished()
 {
     bMusicHasFinished = true;
 
-    if (ActiveTargets.Num() == 0)
+    if (TargetSystemComponent->IsAllTargetsDestroyed())
     {
         GetWorld()->GetTimerManager().SetTimer(
             EndGameTimerHandle, this, &ARangeMasterGameMode::EndGame, EndGameTime, false);
     }
 }
 
-void ARangeMasterGameMode::OnTargetHit(ATarget* Target)
+void ARangeMasterGameMode::OnTargetEvent(ATarget* Target, const FTargetEventData& EventData)
 {
     if (Target)
     {
-        PlayerState->ScoreSystem->IncreaseCombo();
-
-        const UBeamNBeatScoreSettings* Settings = UBeamNBeatScoreSettings::Get();
-        const int32 Points = Settings->BasePoints;
-        const int32 ComboMultiplier = PlayerState->ScoreSystem->GetComboMultiplier();
-
-        PlayerState->ScoreSystem->AddScore(Points * ComboMultiplier);
-        PlayerState->JudgementSystem->RegisterJudgement(EJudgement::Perfect);
+        switch (EventData.TargetEventType) {
+            case ETargetEventType::Hit:
+                PlayerState->RegisterHit();
+                break;
+            case ETargetEventType::Lost:
+                PlayerState->RegisterLost();
+                break;
+            case ETargetEventType::Destroyed:
+                OnTargetDestroyed();
+                break;
+        }
     }
 }
 
-void ARangeMasterGameMode::OnTargetDestroyed(ATarget* Target)
+void ARangeMasterGameMode::OnTargetDestroyed()
 {
-    if (Target)
-    {
-        Target->OnTargetHit.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetHit);
-        Target->OnTargetDestroyed.RemoveDynamic(this, &ARangeMasterGameMode::OnTargetDestroyed);
-        ActiveTargets.Remove(Target);
-    }
-
-    if (bMusicHasFinished && ActiveTargets.Num() == 0)
+    if (bMusicHasFinished && TargetSystemComponent->IsAllTargetsDestroyed())
     {
         GetWorld()->GetTimerManager().SetTimer(
             EndGameTimerHandle, this, &ARangeMasterGameMode::EndGame, EndGameTime, false);
-    }
-}
-
-void ARangeMasterGameMode::DestroyAllActiveTargets()
-{
-    for (ATarget* Target : ActiveTargets)
-    {
-        Target->DestroyTarget();
     }
 }
 
@@ -228,6 +212,12 @@ void ARangeMasterGameMode::StartPreparePhase()
 {
     OnPreparePhaseStarted.Broadcast(); // UI: "Готовьтесь!"
     const float TimeUntilMusicStarts = PreparePhaseTime + CountdownTime;
+    
+    for (FTimerHandle& Handle : PreSpawnTimerHandles)
+    {
+        GetWorld()->GetTimerManager().ClearTimer(Handle);
+    }
+    PreSpawnTimerHandles.Empty();
 
     for (const FTimeMapData& PreSpawnData : CachedPreSpawnTargets)
     {
@@ -235,11 +225,16 @@ void ARangeMasterGameMode::StartPreparePhase()
 
         if (SpawnDelay > 0.0f)
         {
-            FTimerHandle PreSpawnTimerHandle;
-            GetWorld()->GetTimerManager().SetTimer(PreSpawnTimerHandle, [this, PreSpawnData]()
-            {
-                OnBeatReceived(PreSpawnData);
-            }, SpawnDelay, false);
+            FTimerDelegate TimerDelegate;
+            TimerDelegate.BindUFunction(TargetSystemComponent, FName("SpawnTarget"), PreSpawnData);
+
+            FTimerHandle Handle;
+            GetWorld()->GetTimerManager().SetTimer(Handle, TimerDelegate, SpawnDelay, false);
+            PreSpawnTimerHandles.Add(Handle);
+        }
+        else
+        {
+            TargetSystemComponent->SpawnTarget(PreSpawnData);
         }
     }
 
@@ -277,8 +272,6 @@ void ARangeMasterGameMode::FinishCountdown()
     
     OnCountdownFinished.Broadcast(); // UI: "Старт!"
     OnGameStarted.Broadcast(); // Сигнал о начале игры
-
-    bIsGameInProgress = true;
 
     if (RhythmController)
     {

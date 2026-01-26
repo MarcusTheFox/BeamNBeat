@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "BeamNBeatPlayerState.h"
 #include "Actors/RhythmController.h"
-#include "Components/JudgementSystemComponent.h"
-#include "Components/ScoreSystemComponent.h"
+#include "Components/TargetSystemComponent.h"
 #include "Data/Structs/CountdownInfo.h"
 #include "Data/Structs/GameResultData.h"
 #include "Data/Structs/TimeMapData.h"
@@ -75,9 +74,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
     FTrackInfo CurrentTrackData;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Game")
-    bool bIsGameInProgress = false;
-
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category="Game|Countdown")
     FOnCountdownStarted OnCountdownStarted;
 
@@ -99,24 +95,23 @@ protected:
 
 private:
     void EndGame();
-    void DestroyAllActiveTargets();
     
-    UFUNCTION()
-    void OnBeatReceived(const FTimeMapData& TimeMapData);
-
     UFUNCTION()
     void HandleMusicFinished();
 
     UFUNCTION()
-    void OnTargetDestroyed(ATarget* Target);
+    void OnTargetDestroyed();
 
     UFUNCTION()
-    void OnTargetHit(ATarget* Target);
+    void OnTargetEvent(ATarget* Target, const FTargetEventData& EventData);
 
     void StartPreparePhase();
     void StartCountdown();
     void CountdownTick();
     void FinishCountdown();
+
+    UPROPERTY()
+    UTargetSystemComponent* TargetSystemComponent;
 
     UPROPERTY()
     ARhythmController* RhythmController = nullptr;
@@ -126,15 +121,6 @@ private:
 
     UPROPERTY()
     TArray<FTimeMapData> CachedPreSpawnTargets;
-
-    UPROPERTY()
-    TArray<TObjectPtr<ASpawner>> CachedSpawners;
-
-    UPROPERTY()
-    TArray<TObjectPtr<ATarget>> ActiveTargets;
-
-    UPROPERTY()
-    TSubclassOf<ATarget> TargetClass;
 
     FTransform InitialPlayerTransform;
 
@@ -156,4 +142,7 @@ private:
     float CountdownTickInterval = 0.01f;
     float PreparePhaseTime = 2.0f;
     float EndGameTime = 1.0f;
+
+    UPROPERTY()
+    TArray<FTimerHandle> PreSpawnTimerHandles;
 }; 
