@@ -16,4 +16,7 @@ struct FTimeMapData
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int32 ShotPower = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float Lifetime = 0;
 };

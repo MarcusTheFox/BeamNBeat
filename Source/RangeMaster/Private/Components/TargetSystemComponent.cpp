@@ -9,7 +9,7 @@ void UTargetSystemComponent::SpawnTarget(const FTimeMapData& TimeMapData)
 {
 	ASpawner* Spawner = Spawners[TimeMapData.SpawnerID];
 
-	if (ATarget* Target = Spawner->SpawnTarget(TargetClass, TimeMapData.ShotPower))
+	if (ATarget* Target = Spawner->SpawnTarget(TargetClass, TimeMapData.ShotPower, TimeMapData.Lifetime))
 	{
 		Target->OnTargetEvent.AddDynamic(this, &UTargetSystemComponent::OnTargetEventHandler);
 		ActiveTargets.Add(Target);

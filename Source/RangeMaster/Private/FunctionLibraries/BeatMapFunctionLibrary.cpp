@@ -78,6 +78,7 @@ FTimeMapData UBeatMapFunctionLibrary::CreateTimeMapData(const FBeatMapNote& Note
 	FTimeMapData NewTimeData;
 	NewTimeData.SpawnerID = Note.ID;
 	NewTimeData.ShotPower = Note.Properties.Power == 0 ? State.Defaults.Properties.Power : Note.Properties.Power;
+	NewTimeData.Lifetime = 60 / State.Defaults.Bpm;
 	const float Apex = CalculateApexHeight(NewTimeData.ShotPower);
 	NewTimeData.Time = State.Time - CalculateTimeToApex(Apex);
 	UE_LOG(LogTemp, Display, TEXT("SpawnerID: %d | Time: %f"), NewTimeData.SpawnerID, NewTimeData.Time);

@@ -12,10 +12,22 @@ UCLASS()
 class ATarget : public AActor, public IHittableInterface
 {
     GENERATED_BODY()
+
+private:
+    float Lifetime = 0;
+    
 public:
     ATarget();
 
     virtual void OnHit_Implementation() override;
+
+    void Initialize(const float LifetimeValue);
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void SetTargetState();
+    
+    UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+    void SetMissedState();
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
     void DestroyTarget();
@@ -28,4 +40,10 @@ public:
 
     UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Target")
     FOnTargetEvent OnTargetEvent;
+
+    UPROPERTY()
+    FTimerHandle TargetStateTimerHandle;
+    
+    UPROPERTY()
+    FTimerHandle MissedStateTimerHandle;
 }; 

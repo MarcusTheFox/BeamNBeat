@@ -28,7 +28,7 @@ void ASpawner::BeginPlay()
     }
 }
 
-ATarget* ASpawner::SpawnTarget_Implementation(TSubclassOf<ATarget> TargetClass, int32 Power)
+ATarget* ASpawner::SpawnTarget_Implementation(const TSubclassOf<ATarget> TargetClass, const int32 Power, const float Lifetime)
 {
     if (!TargetClass) return nullptr;
     UWorld* World = GetWorld();
@@ -40,9 +40,9 @@ ATarget* ASpawner::SpawnTarget_Implementation(TSubclassOf<ATarget> TargetClass, 
 
     ATarget* Target = World->SpawnActor<ATarget>(TargetClass, SpawnTransform);
     if (!Target) return nullptr;
-    
-    FVector Impulse = FVector::UpVector * Power;
-    Target->SetImpulse(Impulse);
+
+    Target->Initialize(Lifetime);
+    Target->SetImpulse(FVector::UpVector * Power);
     return Target;
 }
 
