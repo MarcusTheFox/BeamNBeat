@@ -9,6 +9,10 @@ UENUM(BlueprintType)
 enum class EJudgement : uint8
 {
 	Perfect		UMETA(DisplayName = "Perfect"),
+	Great		UMETA(DisplayName = "Great"),
+	Good		UMETA(DisplayName = "Good"),
+	Early		UMETA(DisplayName = "Early"),
+	Late		UMETA(DisplayName = "Late"),
 	Miss		UMETA(DisplayName = "Miss"),
 	Lost		UMETA(DisplayName = "Lost"),
 	Count		UMETA(DisplayName = "DO NOT USE", Hidden)

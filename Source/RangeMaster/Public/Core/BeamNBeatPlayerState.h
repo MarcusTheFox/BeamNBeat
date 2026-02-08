@@ -27,7 +27,7 @@ public:
 	UJudgementSystemComponent* JudgementSystem;
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterHit() const;
+	void RegisterHit(const float HitTime) const;
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterMiss() const;

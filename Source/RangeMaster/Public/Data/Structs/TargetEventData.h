@@ -12,9 +12,18 @@ struct FTargetEventData
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	ETargetEventType TargetEventType = ETargetEventType::None;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float NormalizedTime = 0;
+
 	FTargetEventData() = default;
 	explicit FTargetEventData(const ETargetEventType Type) : TargetEventType(Type) {}
 
-	static FTargetEventData CreateHit() { return FTargetEventData(ETargetEventType::Hit); }
+	static FTargetEventData CreateHit(const float HitTime)
+	{
+		FTargetEventData Data;
+		Data.TargetEventType = ETargetEventType::Hit;
+		Data.NormalizedTime = HitTime;
+		return Data;
+	}
 	static FTargetEventData CreateLost() { return FTargetEventData(ETargetEventType::Lost); }
 };

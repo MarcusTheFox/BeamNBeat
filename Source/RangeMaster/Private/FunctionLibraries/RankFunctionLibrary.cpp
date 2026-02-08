@@ -88,6 +88,14 @@ FText URankFunctionLibrary::GetJudgementText(EJudgement Judgement)
 		return FText::FromString(TEXT("Lost"));
 	case EJudgement::Miss:
 		return FText::FromString(TEXT("Miss"));
+	case EJudgement::Early:
+		return FText::FromString(TEXT("Early"));
+	case EJudgement::Late:
+		return FText::FromString(TEXT("Late"));
+	case EJudgement::Good:
+		return FText::FromString(TEXT("Good"));
+	case EJudgement::Great:
+		return FText::FromString(TEXT("Great"));
 	case EJudgement::Perfect:
 		return FText::FromString(TEXT("Perfect"));
 	default:
@@ -100,13 +108,20 @@ FLinearColor URankFunctionLibrary::GetJudgementColor(EJudgement Judgement)
 	switch (Judgement)
 	{
 	case EJudgement::Lost:
-		return FLinearColor(0.8f, 0.2f, 0.2f, 1.0f); // Красный
+		return FLinearColor(0.8f, 0.2f, 0.2f, 1.0f);
 	case EJudgement::Miss:
-		return FLinearColor(0.5f, 0.5f, 0.5f, 1.0f); // Серый
+		return FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	case EJudgement::Late:
+	case EJudgement::Early:
+		return FLinearColor(0.8f, 0.4f, 0.2f, 1.0f);
+	case EJudgement::Good:
+		return FLinearColor(0.8f, 0.8f, 0.2f, 1.0f);
+	case EJudgement::Great:
+		return FLinearColor(0.4f, 0.8f, 0.2f, 1.0f);
 	case EJudgement::Perfect:
-		return FLinearColor(0.2f, 0.8f, 0.2f, 1.0f); // Зеленый
+		return FLinearColor(0.2f, 0.8f, 0.2f, 1.0f);
 	default:
-		return FLinearColor(0.5f, 0.5f, 0.5f, 1.0f); // Серый по умолчанию
+		return FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	}
 }
 

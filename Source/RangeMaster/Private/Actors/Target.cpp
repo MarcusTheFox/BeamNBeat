@@ -9,8 +9,11 @@ ATarget::ATarget()
 
 void ATarget::OnHit_Implementation()
 {
+    const float HitTime = GetWorld()->GetTimerManager().GetTimerElapsed(MissedStateTimerHandle);
+    const float PerfectTime = Lifetime / 2;
+    const float NormalizedTime = ( HitTime - PerfectTime ) / PerfectTime;
     GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-    OnTargetEvent.Broadcast(this, FTargetEventData::CreateHit());
+    OnTargetEvent.Broadcast(this, FTargetEventData::CreateHit(NormalizedTime));
     DestroyTarget();
 }
 

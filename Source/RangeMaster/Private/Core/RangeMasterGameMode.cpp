@@ -187,7 +187,7 @@ void ARangeMasterGameMode::OnTargetEvent(ATarget* Target, const FTargetEventData
     {
         switch (EventData.TargetEventType) {
             case ETargetEventType::Hit:
-                PlayerState->RegisterHit();
+                PlayerState->RegisterHit(EventData.NormalizedTime);
                 break;
             case ETargetEventType::Lost:
                 PlayerState->RegisterLost();
